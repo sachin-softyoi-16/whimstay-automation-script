@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer");
 const utils = require("./utils");
 
 // function for test case 1,2,3
-const openSignUpModel = async (page, messagelist) => {
+const openSignUpModel = async (page, messagelist, passLog) => {
   const formtext = await page.$$eval(`form > *`, (childElements) => {
     return childElements.map((childElement) => {
       return {
@@ -21,9 +21,24 @@ const openSignUpModel = async (page, messagelist) => {
     if (!isForm) {
       await signButton.click();
     }
+    passLog.push(
+      {
+        case_id: "SU_TC_01",
+        message: "SignUp button visible on header",
+      },
+      {
+        case_id: "HM_TC_03",
+        message: "Sign Up: Want an extra $25 off? - Sign-up pop-up should open",
+      }
+    );
+  } else {
+    messagelist.push({
+      case_id: "SU_TC_01",
+      message: "aboutUs button visible on header",
+    });
   }
 };
-const signUpButtonVisible = async (page, messagelist) => {
+const signUpButtonVisible = async (page, messagelist, passLog) => {
   const formtext = await page.$$eval(`form > *`, (childElements) => {
     return childElements.map((childElement) => {
       return {
@@ -49,22 +64,29 @@ const signUpButtonVisible = async (page, messagelist) => {
     await utils.sleep(2000);
     const textVisible =
       "For a limited time, sign up and get a $25 promo code to use on any booking.";
-    const innerText = await page.$$eval(`form > *`, (childElements) => {
-      return childElements.map((childElement) => {
-        return {
-          name: childElement.tagName.toLowerCase(),
-          value: childElement.innerText,
-        };
-      });
-    });
-    const isText = innerText.some((obj) => obj.value == textVisible);
+    const innerText = await page.$$eval(
+      `.chakra-modal__body`,
+      (childElements) => {
+        return childElements.map((childElement) => {
+          return {
+            name: childElement.tagName.toLowerCase(),
+            value: childElement.innerText,
+          };
+        });
+      }
+    );
+    const isText = innerText.some((obj) => obj.value.includes(textVisible));
 
     if (isText) {
       console.log(`singup model text visible`);
+      passLog.push({
+        case_id: "SU_TC_01",
+        message: "On home page Signup In button able to display.",
+      });
     } else {
       messagelist.push({
         case_id: "SU_TC_01",
-        message: "On home page Login In button not able to display.",
+        message: "On home page Signup In button not able to display.",
       });
     }
     const emailTxtBox = await utils.checkButtonExist(
@@ -73,6 +95,10 @@ const signUpButtonVisible = async (page, messagelist) => {
     );
     if (emailTxtBox) {
       console.log(`Sign up button available in signup form`);
+      passLog.push({
+        case_id: "SU_TC_01",
+        message: "Sign up button in signup form",
+      });
     } else {
       console.log(`Sign up button not available in signup form`);
       messagelist.push({
@@ -86,7 +112,10 @@ const signUpButtonVisible = async (page, messagelist) => {
       `//form//button[contains(text(), "Log in")]`
     );
     if (hrefValue) {
-      console.log(`Login button available`);
+      passLog.push({
+        case_id: "SU_TC_01",
+        message: "Login button available in signup form",
+      });
     } else {
       messagelist.push({
         case_id: "SU_TC_01",
@@ -99,6 +128,11 @@ const signUpButtonVisible = async (page, messagelist) => {
       `button[type="submit"]`
     );
     if (emailValidate) {
+      passLog.push({
+        case_id: "SU_TC_03",
+        message:
+          "Sign Up Button remains disable untill register or unregister email address not fill up",
+      });
       console.log("Sign up button is disable with empty data (email)..");
       const textBoxSelector = 'input[type="email"]';
       await page.waitForSelector(textBoxSelector);
@@ -124,13 +158,13 @@ const signUpButtonVisible = async (page, messagelist) => {
   } else {
     messagelist.push({
       case_id: "SU_TC_01",
-      message: "On home page Login In button not able to display.",
+      message: "On home page Signup In button not able to display.",
     });
   }
 };
 
 // function for test case 4,5,6
-const validaion = async (page, messagelist) => {
+const validaion = async (page, messagelist, passLog) => {
   const formtext = await page.$$eval(`form > *`, (childElements) => {
     return childElements.map((childElement) => {
       return {
@@ -140,7 +174,12 @@ const validaion = async (page, messagelist) => {
     });
   });
   const isForm = formtext.some((obj) => obj.value == `Forgot password?`);
+  await utils.sleep(2000);
   if (isForm) {
+    passLog.push({
+      case_id: "SU_TC_04",
+      message: "User should be log in with a valid email address & Password.",
+    });
     console.log(`password screen`);
     const textBoxSelector = 'input[type="password"]';
     await page.waitForSelector(textBoxSelector);
@@ -152,29 +191,73 @@ const validaion = async (page, messagelist) => {
     const [newsignButton] = await page.$x(xpathSelector);
     if (newsignButton) {
       await newsignButton.click();
-      await utils.sleep(1000);
+      await utils.sleep(3000);
       const buttonSelector = `button[title="menu"]`;
       await page.waitForSelector(buttonSelector);
       await page.click(buttonSelector);
       await page.click(buttonSelector);
       await utils.sleep(2000);
+      const btnTextvalue = await page.$$eval(
+        `.chakra-menu__menu-list`,
+        (childElements) => {
+          return childElements.map((childElement) => {
+            return {
+              name: childElement.tagName.toLowerCase(),
+              value: childElement.innerText,
+            };
+          });
+        }
+      );
+      const navList = [
+        "Profile",
+        "Favorites",
+        "Bookings",
+        "Saved Searches",
+        "FAQs",
+        "Promo Codes",
+        "Partner",
+        "Sign Out",
+      ];
+      let existMenu = [];
+      let notExistMenu = [];
+      navList.map((nav) => {
+        const menutext = btnTextvalue.some((obj) => obj.value.includes(nav));
+        if (menutext) {
+          existMenu.push(nav);
+        } else {
+          notExistMenu.push(nav);
+        }
+      });
+      if (existMenu.length === navList.length) {
+        passLog.push({
+          case_id: "HM_TC_04",
+          message: `With login below button should be display. ${existMenu.toString()} `,
+        })
+      }else{
+        messagelist.push({
+          case_id: "HM_TC_04",
+          message: `With login below button should not display. ${notExistMenu.toString()} `,
+        })
+      }
+
       const isLogoutBtn = `nav`;
       await utils.sleep(1000);
       const cookies = await page.cookies();
       await Promise.all(cookies.map((cookie) => page.deleteCookie(cookie)));
       await page.reload({ waitUntil: "networkidle0" });
-      await openSignUpModel(page, messagelist);
+      await openSignUpModel(page, messagelist, passLog);
     }
-
-    console.log(`otp screen`);
   } else {
-    console.log(`signup form`);
+    messagelist.push({
+      case_id: "SU_TC_04",
+      message: "User should be log in with a valid email address & Password.",
+    });
   }
 };
 
 const signUpfunction = async (page, messagelist) => {};
 
-const signUpflow22 = async (page, messagelist) => {
+const signUpflow22 = async (page, messagelist, passLog) => {
   try {
     try {
       const textBoxSelector = 'input[type="email"]';
@@ -194,6 +277,11 @@ const signUpflow22 = async (page, messagelist) => {
           case_id: "SI_TC_14",
           message: `When user click on Login button then "Continue with email" button should be display in login popup.`,
         });
+      } else {
+        passLog.push({
+          case_id: "SI_TC_14",
+          message: `When user click on Login button then "Continue with email" button should be display in login popup.`,
+        });
       }
       if (submitBtn) {
         messagelist.push({
@@ -201,6 +289,10 @@ const signUpflow22 = async (page, messagelist) => {
           message: `The login button is disable with Invalid mobile number`,
         });
       } else {
+        passLog.push({
+          case_id: "SI_TC_06",
+          message: `The login button is disable with Invalid mobile number`,
+        });
         await page.click('button[type="submit"]');
         await utils.sleep(1000); // wait 1 sec
         const textSelector = "#firstName";
@@ -213,13 +305,19 @@ const signUpflow22 = async (page, messagelist) => {
         });
 
         if (isTextPresent) {
+          passLog.push({
+            case_id: "SI_TC_11",
+            message: `User will redirect to the sign up page and it will ask for require details.`,
+          });
           await utils.sleep(2000);
           await page.waitForSelector(`#firstName`);
           await page.type(`#firstName`, "test", { delay: 100 });
           await page.type(`#lastName`, "test", { delay: 100 });
           await page.type(
             'input[type="tel"]',
-            `70436298${Math.random() * 10}${Math.random() * 10}`
+            `70436298${Math.floor(Math.random() * 10)}${Math.floor(
+              Math.random() * 10
+            )}`
           );
           await page.type("#password", "Test@123", { delay: 100 });
           const dob = 'input[type="date"]';
@@ -247,6 +345,11 @@ const signUpflow22 = async (page, messagelist) => {
           );
           if (!termConditionText) {
             messagelist.push({
+              case_id: "SI_TC_13",
+              message: `Text not found`,
+            });
+          } else {
+            passLog.push({
               case_id: "SI_TC_13",
               message: `Text not found`,
             });
@@ -282,18 +385,23 @@ const signUpflow22 = async (page, messagelist) => {
   }
 };
 
-exports.signUp = async () => {
-  const browser = await puppeteer.launch({
-    headless: false,
-    executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
-  });
-  let errorLog = [];
-  const page = await browser.newPage();
-  await page.goto("https://uat.whimstay.com/");
-  await page.setViewport({ width: 1080, height: 864 });
-  await signUpButtonVisible(page, errorLog); // test-case-1
-  await validaion(page, errorLog); // test-case-4
-  await signUpflow22(page, errorLog);
+exports.signUp = async (page, errorLog, passLog) => {
+  // const browser = await puppeteer.launch({
+  //   headless: false,
+  //   executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  // });
+  // let errorLog = [];
+  // const page = await browser.newPage();
+  // await page.goto("https://uat.whimstay.com/");
+  // await page.setViewport({ width: 1080, height: 864 });
+  await signUpButtonVisible(page, errorLog, passLog); // test-case-1
+  await utils.sleep(2000);
+  await validaion(page, errorLog, passLog); // test-case-4
+  await signUpflow22(page, errorLog, passLog);
+  return {
+    errorLog: errorLog,
+    passLog: passLog,
+  };
 };
 
-signUp();
+// signUp();

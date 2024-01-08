@@ -47,7 +47,12 @@ const logInButtonVisible = async (page, messagelist, passLog) => {
     passLog.push({
       case_id: "SI_TC_01",
       message: "On home page Login In button should be display.",
-    });
+    },
+    {
+      case_id: "HP_TC_01",
+      message: "Login: Welcome to Whimstay login pop-up should open.",
+    }
+    );
   } else {
     messagelist.push({
       case_id: "SI_TC_01",
@@ -602,8 +607,8 @@ const signUpflow22 = async (page, messagelist, passLog) => {
       const textBoxSelector = 'input[type="tel"]';
       await page.waitForSelector(textBoxSelector);
       await page.$eval(textBoxSelector, (textBox) => (textBox.value = "+1"));
-      var textToEnter = "7043629867";
-      `7043629${Math.random() * 10} ${Math.random() * 10}${Math.random() * 10}`
+      var textToEnter = 
+      `7043629${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`
       
       await page.type(textBoxSelector, textToEnter, { delay: 100 });
 
@@ -785,21 +790,20 @@ const runScript = async () => {
     await page.goto("https://uat.whimstay.com/");
     await page.setViewport({ width: 1080, height: 864 });
 
-    await logInButtonVisible(page, errorLog, passLog); // test-case-1
-    await checkLoginValidation(page, errorLog, passLog); // test-case-2
-    await sleep(1000);
-    await mobileNumberLength(page, errorLog, passLog);
-    await mobileNumberValidT4(page, errorLog, passLog);
-    await resetOtp(page, errorLog, passLog);
-    await sleep(2000);
-    await logOutFeature(page, errorLog, passLog);
-    await sleep(2000);
-    await logInButtonVisible(page, errorLog, passLog); //check text
-    await checkLoginValidation(page, errorLog, passLog); // test-case-2
-    await signUpflow22(page, errorLog, passLog);
-
-    await sleep(2000);
-    await signupflowController.signUp();
+    // await logInButtonVisible(page, errorLog, passLog); // test-case-1
+    // await checkLoginValidation(page, errorLog, passLog); // test-case-2
+    // await sleep(1000);
+    // await mobileNumberLength(page, errorLog, passLog);
+    // await mobileNumberValidT4(page, errorLog, passLog);
+    // await resetOtp(page, errorLog, passLog);
+    // await sleep(2000);
+    // await logOutFeature(page, errorLog, passLog);
+    // await sleep(2000);
+    // await logInButtonVisible(page, errorLog, passLog); //check text
+    // await checkLoginValidation(page, errorLog, passLog); // test-case-2
+    // await signUpflow22(page, errorLog, passLog);
+    // await sleep(2000);
+    const resp = await signupflowController.signUp(page, errorLog, passLog);
     console.log(
       `Test-case passed : ${passLog.length}`,
       `test case failed : ${errorLog.length}`

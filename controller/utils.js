@@ -1,6 +1,6 @@
 // function for signup
 const client = require("./db");
-
+// const myutils = require('./')
 exports.findText = async (page, text) => {
   try {
     // const xpath = `//button[contains(text(), '${buttonText}')]`;
@@ -93,3 +93,22 @@ const getPassword = async (mobile) => {
     console.log(`mongo connection error`, error);
   }
 };
+const closeModel = async(page, childNode, verifytext)=>{
+  const formtext = await page.$$eval(childNode, (childElements) => {
+    return childElements.map((childElement) => {
+      return {
+        name: childElement.tagName.toLowerCase(),
+        value: childElement.innerText,
+      };
+    });
+  });
+  const isForm = formtext.some((obj) => obj.value == text);
+  if(isForm){
+    await page.waitForSelector(`//section//button[type="button"]`);
+      // const isMobileButtonDisabled = await utils.checkButtonAvaibilty(
+      //   page,
+      //   `button[type="submit"]`
+      // );
+  }
+  return 
+}
