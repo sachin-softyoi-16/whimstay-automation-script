@@ -282,7 +282,7 @@ const signUpflow22 = async (page, messagelist) => {
   }
 };
 
-const signUp = async () => {
+exports.signUp = async () => {
   const browser = await puppeteer.launch({
     headless: false,
     executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",

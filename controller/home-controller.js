@@ -4,6 +4,7 @@ const client = require("./db");
 const moment = require("moment");
 const { error } = require("selenium-webdriver");
 const utils = require('./utils')
+const signupflowController = require('./signUp-controller')
 const getPassword = async (mobile) => {
   try {
     let db = await client.connectToDatabase();
@@ -796,6 +797,9 @@ const runScript = async () => {
     await logInButtonVisible(page, errorLog, passLog); //check text
     await checkLoginValidation(page, errorLog, passLog); // test-case-2
     await signUpflow22(page, errorLog, passLog);
+
+    await sleep(2000);
+    await signupflowController.signUp();
     console.log(
       `Test-case passed : ${passLog.length}`,
       `test case failed : ${errorLog.length}`
