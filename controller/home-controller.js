@@ -790,19 +790,19 @@ const runScript = async () => {
     await page.goto("https://uat.whimstay.com/");
     await page.setViewport({ width: 1080, height: 864 });
 
-    // await logInButtonVisible(page, errorLog, passLog); // test-case-1
-    // await checkLoginValidation(page, errorLog, passLog); // test-case-2
-    // await sleep(1000);
-    // await mobileNumberLength(page, errorLog, passLog);
-    // await mobileNumberValidT4(page, errorLog, passLog);
-    // await resetOtp(page, errorLog, passLog);
-    // await sleep(2000);
-    // await logOutFeature(page, errorLog, passLog);
-    // await sleep(2000);
-    // await logInButtonVisible(page, errorLog, passLog); //check text
-    // await checkLoginValidation(page, errorLog, passLog); // test-case-2
-    // await signUpflow22(page, errorLog, passLog);
-    // await sleep(2000);
+    await logInButtonVisible(page, errorLog, passLog); // test-case-1
+    await checkLoginValidation(page, errorLog, passLog); // test-case-2
+    await sleep(1000);
+    await mobileNumberLength(page, errorLog, passLog);
+    await mobileNumberValidT4(page, errorLog, passLog);
+    await resetOtp(page, errorLog, passLog);
+    await sleep(2000);
+    await logOutFeature(page, errorLog, passLog);
+    await sleep(2000);
+    await logInButtonVisible(page, errorLog, passLog); //check text
+    await checkLoginValidation(page, errorLog, passLog); // test-case-2
+    await signUpflow22(page, errorLog, passLog);
+    await sleep(2000);
     const resp = await signupflowController.signUp(page, errorLog, passLog);
     console.log(
       `Test-case passed : ${passLog.length}`,
