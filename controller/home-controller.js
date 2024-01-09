@@ -23,15 +23,7 @@ const getPassword = async (mobile) => {
 
 // function for test case 1 Check for Log in button visible or not
 const logInButtonVisible = async (page, messagelist, passLog) => {
-  const formtext = await page.$$eval(`form > *`, (childElements) => {
-    return childElements.map((childElement) => {
-      return {
-        name: childElement.tagName.toLowerCase(),
-        value: childElement.innerText,
-      };
-    });
-  });
-  const isForm = formtext.some((obj) => obj.value == `Want an extra $25 off?`);
+
 
   const buttonText = "Log in";
   const xpath = `//button[contains(text(), '${buttonText}')]`;
@@ -40,6 +32,15 @@ const logInButtonVisible = async (page, messagelist, passLog) => {
   // test case 1 => Check for Log in button visible or not
   if (button) {
     console.log(`login button visible`);
+    const formtext = await page.$$eval(`form > *`, (childElements) => {
+      return childElements.map((childElement) => {
+        return {
+          name: childElement.tagName.toLowerCase(),
+          value: childElement.innerText,
+        };
+      });
+    });
+    const isForm = formtext.some((obj) => obj.value == `Already have an account?Log in`);
     if (isForm) {
       await button.click();
     }
@@ -789,10 +790,11 @@ const runScript = async () => {
     const page = await browser.newPage();
     await page.goto("https://uat.whimstay.com/");
     await page.setViewport({ width: 1080, height: 864 });
+    await sleep(2000);
 
     await logInButtonVisible(page, errorLog, passLog); // test-case-1
     await checkLoginValidation(page, errorLog, passLog); // test-case-2
-    await sleep(1000);
+    await sleep(15000);
     await mobileNumberLength(page, errorLog, passLog);
     await mobileNumberValidT4(page, errorLog, passLog);
     await resetOtp(page, errorLog, passLog);
@@ -803,6 +805,12 @@ const runScript = async () => {
     await checkLoginValidation(page, errorLog, passLog); // test-case-2
     await signUpflow22(page, errorLog, passLog);
     await sleep(2000);
+    await logOutFeature(page, errorLog, passLog);
+    await sleep(2000);
+    console.log(`before signup`,
+      `Test-case passed : ${passLog.length}`,
+      `test case failed : ${errorLog.length}`
+    );
     const resp = await signupflowController.signUp(page, errorLog, passLog);
     console.log(
       `Test-case passed : ${passLog.length}`,
