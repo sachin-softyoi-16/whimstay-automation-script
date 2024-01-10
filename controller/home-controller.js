@@ -3,8 +3,9 @@ const puppeteer = require("puppeteer");
 const client = require("./db");
 const moment = require("moment");
 const { error } = require("selenium-webdriver");
-const utils = require('./utils')
-const signupflowController = require('./signUp-controller')
+const utils = require("./utils");
+const signupflowController = require("./signUp-controller");
+const { homePage } = require("./home-screen-controller");
 const getPassword = async (mobile) => {
   try {
     let db = await client.connectToDatabase();
@@ -23,15 +24,13 @@ const getPassword = async (mobile) => {
 
 // function for test case 1 Check for Log in button visible or not
 const logInButtonVisible = async (page, messagelist, passLog) => {
-
-
   const buttonText = "Log in";
   const xpath = `//button[contains(text(), '${buttonText}')]`;
   await page.waitForXPath(xpath);
   const [button] = await page.$x(xpath);
   // test case 1 => Check for Log in button visible or not
   if (button) {
-    console.log(`login button visible`);
+    utils.successLog(`SI_TC_01 : login button visible => Pass`);
     const formtext = await page.$$eval(`form > *`, (childElements) => {
       return childElements.map((childElement) => {
         return {
@@ -40,21 +39,36 @@ const logInButtonVisible = async (page, messagelist, passLog) => {
         };
       });
     });
-    const isForm = formtext.some((obj) => obj.value == `Already have an account?Log in`);
+    const isForm = formtext.some(
+      (obj) => obj.value == `Already have an account?Log in`
+    );
     if (isForm) {
+      utils.successLog(`SU_TC_01 : Sign Up Button Visible & Clickable => Pass`);
       await button.click();
+    } else {
     }
     await button.click();
-    passLog.push({
-      case_id: "SI_TC_01",
-      message: "On home page Login In button should be display.",
-    },
-    {
-      case_id: "HP_TC_01",
-      message: "Login: Welcome to Whimstay login pop-up should open.",
-    }
+    utils.successLog(
+      `HP_TC_01 : Login: Welcome to Whimstay login pop-up should open. => Pass`
+    );
+    utils.successLog(
+      `SI_TC_01 : Login: On home page Login In button should be display. => Pass`
+    );
+
+    passLog.push(
+      {
+        case_id: "SI_TC_01",
+        message: "On home page Login In button should be display.",
+      },
+      {
+        case_id: "HP_TC_01",
+        message: "Login: Welcome to Whimstay login pop-up should open.",
+      }
     );
   } else {
+    utils.errorLog(
+      "SI_TC_01 =>On home page Login In button not able to display. => failed"
+    );
     messagelist.push({
       case_id: "SI_TC_01",
       message: "On home page Login In button not able to display.",
@@ -66,13 +80,14 @@ const logInButtonVisible = async (page, messagelist, passLog) => {
   const [signButton] = await page.$x(xpath);
   // test case 1 => Check for Log in button visible or not
   if (signButton) {
-    console.log(`SU_TC_01 sign up button visible`);
+    utils.successLog(`SU_TC_01 sign up button visible`);
     passLog.push({
       case_id: "SU_TC_01",
       message: "Sign Up Button Visible & Clickable",
     });
     // await signButton.click();
   } else {
+    utils.errorLog(`SU_TC_01: On home page Login In button not able to display.`);
     messagelist.push({
       case_id: "SU_TC_01",
       message: "On home page Login In button not able to display.",
@@ -88,7 +103,9 @@ const checkLoginValidation = async (page, messagelist, passLog) => {
       `button[type="submit"]`
     );
     if (emailValidate) {
-      console.log("Check Login disable with empty data (email)..");
+      utils.successLog(
+        "SI_TC_02 :Check Login disable with empty data (email).. => Pass"
+      );
       passLog.push({
         case_id: "SI_TC_02",
         message: "Check Login validaion with empty data (email).",
@@ -109,12 +126,17 @@ const checkLoginValidation = async (page, messagelist, passLog) => {
         `button[type="submit"]`
       );
       if (isMobileButtonDisabled) {
-        console.log("Check Login disable with empty data (Moblie Number)..");
+        utils.successLog(
+          "SI_TC_02: Check Login disable with empty data (Moblie Number).."
+        );
         passLog.push({
           case_id: "SI_TC_02",
           message: "Check Login disable with empty data (Moblie Number).",
         });
       } else {
+        utils.errorLog(
+          `SI_TC_02: Check Login validaion with empty data (Moblie Number).`
+        );
         messagelist.push({
           case_id: "SI_TC_02",
           message: "Check Login validaion with empty data (Moblie Number).",
@@ -122,7 +144,7 @@ const checkLoginValidation = async (page, messagelist, passLog) => {
         console.log("Check Login enable with empty data (Moblie Number)..");
       }
     } else {
-      console.log(`button is enable with vailid mobile`);
+      utils.errorLog(`SI_TC_02: button is enable with vailid mobile`);
       messagelist.push({
         case_id: "SI_TC_02",
         message: "Have no button for Log in with a phone.",
@@ -142,7 +164,7 @@ const mobileNumberLength = async (page, messagelist, passLog) => {
   await page.type(textBoxSelector, textToEnter, { delay: 100 });
   const btnValidate = await checkButtonAvaibilty(page, `button[type="submit"]`);
   if (btnValidate) {
-    console.log(`Tast-Case-3 Do not allow to enter more than 10 digit.`);
+    utils.successLog(`Tast-Case-3: Do not allow to enter more than 10 digit.`);
     passLog.push({
       case_id: "SI_TC_03",
       message: "Do not allow to enter more than 10 digit.",
@@ -152,7 +174,7 @@ const mobileNumberLength = async (page, messagelist, passLog) => {
       case_id: "SI_TC_03",
       message: "Do not allow to enter more than 10 digit.",
     });
-    console.log(`Tast-Case-3 allow to enter more than 10 digit.`);
+    utils.errorLog(`Tast-Case-3 allow to enter more than 10 digit.`);
   }
 };
 
@@ -169,13 +191,15 @@ const mobileNumberValidT4 = async (page, messagelist, passLog) => {
       case_id: "SI_TC_04",
       message: `Validation message should be display like "Phone number not valid. Please try again" and continue button will remin disable untill user not enter 10 digits.`,
     });
-    console.log(`SI_TC_04 - button is disabled due to invailid mobile number`);
+    utils.successLog(
+      `SI_TC_04 - button is disabled due to invailid mobile number`
+    );
   } else {
     messagelist.push({
       case_id: "SI_TC_04",
       message: `Validation message should be display like "Phone number not valid. Please try again" and continue button will remin disable untill user not enter 10 digits.`,
     });
-    console.log(`SI_TC_04 - button is enable with Invailid mobile number`);
+    utils.errorLog(`SI_TC_04 - button is enable with Invailid mobile number`);
   }
 
   /// test case 5 for It should allow to add  only numeric value.
@@ -188,7 +212,7 @@ const mobileNumberValidT4 = async (page, messagelist, passLog) => {
   );
   const isNumeric = /^\d+$/.test(textBoxValue);
   if (isNumeric) {
-    console.log(
+    utils.errorLog(
       `SI_TC_05 - It's not allow to add  only numeric value and it's allow Alphabet, Special Character or space.`
     );
     messagelist.push({
@@ -200,7 +224,9 @@ const mobileNumberValidT4 = async (page, messagelist, passLog) => {
       case_id: "SI_TC_05",
       message: `It should allow to add  only numeric value and it's allow Alphabet, Special Character or space.`,
     });
-    console.log("SI_TC_05 - The text box does not allow only numeric values.");
+    utils.successLog(
+      "SI_TC_05 - The text box does not allow only numeric values."
+    );
   }
 };
 
@@ -260,11 +286,17 @@ const resetOtp = async (page, messagelist, passLog) => {
   await page.type(textBoxSelector, textToEnter, { delay: 100 });
   const submitBtn = await checkButtonAvaibilty(page, `button[type="submit"]`);
   if (submitBtn) {
+    utils.errorLog(
+      `SI_TC_06 : The login button is disable with valid mobile number`
+    );
     messagelist.push({
       case_id: "SI_TC_06",
       message: `The login button is disable with valid mobile number`,
     });
   } else {
+    utils.successLog(
+      `SI_TC_06 : The login button is disable with valid mobile number`
+    );
     passLog.push({
       case_id: "SI_TC_06",
       message: `The login button is disable with valid mobile number`,
@@ -293,6 +325,10 @@ const resetOtp = async (page, messagelist, passLog) => {
         await sleep(1000);
         const otpScreen = await checkButtonvisibilty(page, `Try again`);
         if (otpScreen) {
+          utils.successLog(`SI_TC_06 : Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`);
+          utils.errorLog(`SI_TC_08 : Resent button click and enter new one password but api is not verified latest otp. It's bug from api side.`);
+          utils.errorLog(`SI_TC_09 : New otp not verified from backend.`);
+          utils.errorLog(`SI_TC_10 : Do not allow user to login with OLD otp. it should display expire otp in red color. not getting color attribute`);
           passLog.push({
             case_id: "SI_TC_06",
             message: `Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`,
@@ -336,6 +372,7 @@ const resetOtp = async (page, messagelist, passLog) => {
           await page.type(otptextBoxSelector, otpcode, { delay: 100 });
         } else {
           console.log(`The text "${expectedText}" is not present on the page.`);
+          utils.errorLog(`SI_TC_06: Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`);
           messagelist.push({
             case_id: "SI_TC_06",
             message: `Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`,
@@ -407,8 +444,8 @@ const resetOtp = async (page, messagelist, passLog) => {
         // }
         // console.log(otpScreen);
       } else {
-        console.log(
-          `Too many unsuccessful login attempts. Please try again in 1 hour.error from api side`
+        utils.errorLog(
+          `SI_TC_06 "Too many unsuccessful login attempts. Please try again in 1 hour.error from api side`
         );
         messagelist.push({
           case_id: "SI_TC_06",
@@ -492,9 +529,9 @@ const checkWithmobile = async (page, messagelist) => {
     await page.type(textBoxSelector, textToEnter, { delay: 100 });
     emailValidate = await checkButtonAvaibilty(page, `button[type="submit"]`);
     if (emailValidate) {
-      console.log(`button is disabled due to invailid mobile number`);
+      utils.successLog(`button is disabled due to invailid mobile number`);
     } else {
-      console.log(`button is enable with vailid mobile number`);
+      utils.errorLog(`button is enable with vailid mobile number`);
     }
   }
 };
@@ -608,9 +645,10 @@ const signUpflow22 = async (page, messagelist, passLog) => {
       const textBoxSelector = 'input[type="tel"]';
       await page.waitForSelector(textBoxSelector);
       await page.$eval(textBoxSelector, (textBox) => (textBox.value = "+1"));
-      var textToEnter = 
-      `7043629${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`
-      
+      var textToEnter = `7043629${Math.floor(Math.random() * 10)}${Math.floor(
+        Math.random() * 10
+      )}${Math.floor(Math.random() * 10)}`;
+
       await page.type(textBoxSelector, textToEnter, { delay: 100 });
 
       const submitBtn = await checkButtonAvaibilty(
@@ -620,22 +658,26 @@ const signUpflow22 = async (page, messagelist, passLog) => {
 
       const SI_TC_14 = await checkButtonvisibilty(page, `Log in with email`);
       if (!SI_TC_14) {
+        utils.errorLog(`SI_TC_14: When user click on Login button then "Continue with email" button should be display in login popup.`)
         messagelist.push({
           case_id: "SI_TC_14",
           message: `When user click on Login button then "Continue with email" button should be display in login popup.`,
         });
       } else {
+        utils.successLog(`SI_TC_14: When user click on Login button then "Continue with email" button should be display in login popup.`)
         passLog.push({
           case_id: "SI_TC_14",
           message: `When user click on Login button then "Continue with email" button should be display in login popup.`,
         });
       }
       if (submitBtn) {
+        utils.errorLog(`SI_TC_06: The login button is disable with Invalid mobile number`)
         messagelist.push({
           case_id: "SI_TC_06",
           message: `The login button is disable with Invalid mobile number`,
         });
       } else {
+        utils.successLog(`SI_TC_06: The login button is disable with Invalid mobile number`)
         passLog.push({
           case_id: "SI_TC_06",
           message: `The login button is disable with Invalid mobile number`,
@@ -653,6 +695,7 @@ const signUpflow22 = async (page, messagelist, passLog) => {
         });
 
         if (isTextPresent) {
+          utils.successLog(`SI_TC_11 : User will redirect to the sign up page and it will ask for require details.`);
           passLog.push({
             case_id: "SI_TC_11",
             message: `User will redirect to the sign up page and it will ask for require details.`,
@@ -689,11 +732,13 @@ const signUpflow22 = async (page, messagelist, passLog) => {
             (obj) => obj.value == expectedText
           );
           if (!termConditionText) {
+            utils.errorLog(`SI_TC_13 : Text not found`)
             messagelist.push({
               case_id: "SI_TC_13",
               message: `Text not found`,
             });
           } else {
+            utils.successLog(`SI_TC_13 : Text not found`)
             passLog.push({
               case_id: "SI_TC_13",
               message: `Text not found`,
@@ -746,7 +791,7 @@ const signUpflow22 = async (page, messagelist, passLog) => {
             case_id: "SI_TC_11",
             message: `User will redirect to the sign up page and it will ask for require details.`,
           });
-          console.log(`screen not found`);
+          utils.errorLog(`SI_TC_11: User will redirect to the sign up page and it will ask for require details.`);
         }
       }
     } catch (error) {
@@ -765,6 +810,7 @@ const logOutFeature = async (page, messagelist, passLog) => {
       case_id: "SI_TC_07",
       message: `Once user enter 6 digit OTP then it will automatically redirect to the home screen.`,
     });
+    utils.passLog(`SI_TC_07: Once user enter 6 digit OTP then it will automatically redirect to the home screen.`);
     await page.click(isLogin);
     await page.click(isLogin);
     await sleep(1000);
@@ -772,22 +818,26 @@ const logOutFeature = async (page, messagelist, passLog) => {
     await Promise.all(cookies.map((cookie) => page.deleteCookie(cookie)));
     await page.reload({ waitUntil: "networkidle0" });
   } catch (error) {
+    console.log(error)
     messagelist.push({
       case_id: "SI_TC_07",
       message: `Once user enter 6 digit OTP then it will automatically redirect to the home screen.`,
     });
-    throw `User not login`;
+    utils.errorLog(`SI_TC_07: Once user enter 6 digit OTP then it will automatically redirect to the home screen.`)
+    // throw `User not login`;
   }
 };
 const runScript = async () => {
   let errorLog = [];
   let passLog = [];
+  let page;
+  let browser;
   try {
-    const browser = await puppeteer.launch({
+    browser = await puppeteer.launch({
       headless: false,
       executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
     });
-    const page = await browser.newPage();
+    page = await browser.newPage();
     await page.goto("https://uat.whimstay.com/");
     await page.setViewport({ width: 1080, height: 864 });
     await sleep(2000);
@@ -807,24 +857,24 @@ const runScript = async () => {
     await sleep(2000);
     await logOutFeature(page, errorLog, passLog);
     await sleep(2000);
-    console.log(`before signup`,
+    console.log(
+      `before signup`,
       `Test-case passed : ${passLog.length}`,
       `test case failed : ${errorLog.length}`
     );
     const resp = await signupflowController.signUp(page, errorLog, passLog);
-    console.log(
-      `Test-case passed : ${passLog.length}`,
-      `test case failed : ${errorLog.length}`
-    );
+    await homePage(page, errorLog, passLog)
+    console.log("\x1b[32m%s\x1b[0m", `Test-case passed : ${passLog.length}`),
+      console.log("\x1b[31m%s\x1b[0m", `test case failed : ${errorLog.length}`);
 
     // await logInButtonVisible(page, errorLog); // test-case-1
     // await sleep(1000);
     // await checkLoginValidation(page, errorLog); // test-case-2
   } catch (error) {
-    console.log(
-      `Test-case passed : ${passLog.length}`,
-      `test case failed : ${errorLog.length}`
-    );
+    await homePage(page, errorLog, passLog)
+
+    console.log("\x1b[32m%s\x1b[0m", `Test-case passed : ${passLog.length}`),
+      console.log("\x1b[31m%s\x1b[0m", `test case failed : ${errorLog.length}`);
     console.log(error);
   }
 };

@@ -112,3 +112,10 @@ const closeModel = async(page, childNode, verifytext)=>{
   }
   return 
 }
+
+exports.successLog = (message)=>{
+  console.log('\x1b[32m%s\x1b[0m', `${message} => Pass`);  //cyan
+}
+exports.errorLog = (message)=>{
+  console.log('\x1b[31m%s\x1b[0m', `${message} failed`);  //cyan
+}

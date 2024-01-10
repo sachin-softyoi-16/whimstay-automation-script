@@ -176,6 +176,7 @@ const validaion = async (page, messagelist, passLog) => {
   const isForm = formtext.some((obj) => obj.value == `Forgot password?`);
   await utils.sleep(2000);
   if (isForm) {
+    utils.successLog(`SU_TC_04: User should be log in with a valid email address & Password.`)
     passLog.push({
       case_id: "SU_TC_04",
       message: "User should be log in with a valid email address & Password.",
@@ -248,6 +249,7 @@ const validaion = async (page, messagelist, passLog) => {
       await openSignUpModel(page, messagelist, passLog);
     }
   } else {
+    utils.errorLog(`SU_TC_04 : User should be log in with a valid email address & Password.`)
     messagelist.push({
       case_id: "SU_TC_04",
       message: "User should be log in with a valid email address & Password.",

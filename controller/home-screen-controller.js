@@ -107,14 +107,14 @@ const verifySearchBar = async (page, errorlog, passLog) => {
     throw error;
   }
 };
-const homePage = async (errorLog = [], passLog = []) => {
-  const browser = await puppeteer.launch({
-    headless: false,
-    executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
-  });
-  const page = await browser.newPage();
-  await page.goto("https://uat.whimstay.com/");
-  await page.setViewport({ width: 1080, height: 864 });
+exports.homePage = async (page, errorLog = [], passLog = []) => {
+  // const browser = await puppeteer.launch({
+  //   headless: false,
+  //   executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  // });
+  // const page = await browser.newPage();
+  // await page.goto("https://uat.whimstay.com/");
+  // await page.setViewport({ width: 1080, height: 864 });
   await checkHeader(page, errorLog, passLog); // test-case-1
   await page.goto("https://uat.whimstay.com/");
   await verifySearchBar(page, errorLog, passLog);
@@ -123,4 +123,4 @@ const homePage = async (errorLog = [], passLog = []) => {
     passLog: passLog,
   };
 };
-homePage();
+// homePage();
