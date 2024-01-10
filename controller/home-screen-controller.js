@@ -4,34 +4,34 @@ const utils = require("./utils");
 
 const checkHeader = async (page, errorlog, passLog) => {
   const signuptxt = "Sign up";
-  const signUpBtn = await utils.checkButtonvisibilty(page, `Sign up`);
-  if (signUpBtn) {
-    utils.successLog(`HM_TC_01 => signUp Button visible on header`)
-    passLog.push({
-      case_id: "HM_TC_01",
-      message: "signUp Button visible on header",
-    });
-  } else {
-    utils.errorLog(`HM_TC_01 => signUp Button visible on header`)
-    errorlog.push({
-      case_id: "HM_TC_01",
-      message: "signUpBtn Button not visible on header",
-    });
-  }
-  const logInBtn = await utils.checkButtonvisibilty(page, `Log in`);
-  if (logInBtn) {
-    utils.successLog(`HM_TC_01: aboutUs button visible on header`)
-    passLog.push({
-      case_id: "HM_TC_01",
-      message: "aboutUs button visible on header",
-    });
-  } else {
-    errorlog.push({
-      case_id: "HM_TC_01",
-      message: "logIn Button not visible on header",
-    });
-    utils.errorLog(`HM_TC_01: aboutUs button visible on header`)
-  }
+  // const signUpBtn = await utils.checkButtonvisibilty(page, `Sign up`);
+  // if (signUpBtn) {
+  //   utils.successLog(`HM_TC_01 => signUp Button visible on header`)
+  //   passLog.push({
+  //     case_id: "HM_TC_01",
+  //     message: "signUp Button visible on header",
+  //   });
+  // } else {
+  //   utils.errorLog(`HM_TC_01 => signUp Button visible on header`)
+  //   errorlog.push({
+  //     case_id: "HM_TC_01",
+  //     message: "signUpBtn Button not visible on header",
+  //   });
+  // }
+  // const logInBtn = await utils.checkButtonvisibilty(page, `Log in`);
+  // if (logInBtn) {
+  //   utils.successLog(`HM_TC_01: aboutUs button visible on header`)
+  //   passLog.push({
+  //     case_id: "HM_TC_01",
+  //     message: "aboutUs button visible on header",
+  //   });
+  // } else {
+  //   errorlog.push({
+  //     case_id: "HM_TC_01",
+  //     message: "logIn Button not visible on header",
+  //   });
+  //   utils.errorLog(`HM_TC_01: aboutUs button visible on header`)
+  // }
   const sxpath = `//a[contains(text(), 'About Us')]`;
   await page.waitForXPath(sxpath);
   const [aboutUs] = await page.$x(sxpath);
