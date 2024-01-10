@@ -119,3 +119,10 @@ exports.successLog = (message)=>{
 exports.errorLog = (message)=>{
   console.log('\x1b[31m%s\x1b[0m', `${message} failed`);  //cyan
 }
+exports.logsaved= (isArray , case_id, message)=>{
+  isArray.push({
+    case_id: case_id,
+    message: message,
+  });
+  return isArray;
+}

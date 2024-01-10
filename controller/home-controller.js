@@ -841,6 +841,7 @@ const runScript = async () => {
     await page.goto("https://uat.whimstay.com/");
     await page.setViewport({ width: 1080, height: 864 });
     await sleep(2000);
+    // await homePage(page, errorLog, passLog)
 
     await logInButtonVisible(page, errorLog, passLog); // test-case-1
     await checkLoginValidation(page, errorLog, passLog); // test-case-2
@@ -871,7 +872,7 @@ const runScript = async () => {
     // await sleep(1000);
     // await checkLoginValidation(page, errorLog); // test-case-2
   } catch (error) {
-    await homePage(page, errorLog, passLog)
+    // await homePage(page, errorLog, passLog)
 
     console.log("\x1b[32m%s\x1b[0m", `Test-case passed : ${passLog.length}`),
       console.log("\x1b[31m%s\x1b[0m", `test case failed : ${errorLog.length}`);
