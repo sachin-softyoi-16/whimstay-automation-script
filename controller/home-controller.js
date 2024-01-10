@@ -810,7 +810,7 @@ const logOutFeature = async (page, messagelist, passLog) => {
       case_id: "SI_TC_07",
       message: `Once user enter 6 digit OTP then it will automatically redirect to the home screen.`,
     });
-    utils.passLog(`SI_TC_07: Once user enter 6 digit OTP then it will automatically redirect to the home screen.`);
+    utils.successLog(`SI_TC_07: Once user enter 6 digit OTP then it will automatically redirect to the home screen.`);
     await page.click(isLogin);
     await page.click(isLogin);
     await sleep(1000);
