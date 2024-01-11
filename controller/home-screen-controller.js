@@ -37,8 +37,8 @@ const checkHeader = async (page, errorlog, passLog) => {
   const [aboutUs] = await page.$x(sxpath);
   if (aboutUs) {
     await aboutUs.click();
-    utils.successLog(`HM_TC_02 : aboutUs button visible on header`)
-    utils.successLog(`HM_TC_03 : Login , signup and About us text verify`)
+    utils.successLog(`HM_TC_02 : aboutUs button visible on header`);
+    utils.successLog(`HM_TC_03 : Login , signup and About us text verify`);
     passLog.push(
       {
         case_id: "HM_TC_02",
@@ -50,7 +50,7 @@ const checkHeader = async (page, errorlog, passLog) => {
       }
     );
   } else {
-    utils.errorLog(`HM_TC_03 : Login , signup and About us text verify`)
+    utils.errorLog(`HM_TC_03 : Login , signup and About us text verify`);
     errorlog.push({
       case_id: "HM_TC_02",
       message: "aboutUs button not visible on header",
@@ -111,16 +111,40 @@ const verifySearchBar = async (page, errorlog, passLog) => {
   const firstChildSelector = "ul:first-child";
   const firstChildElement = await page.$(firstChildSelector);
   if (firstChildElement !== null) {
-    utils.successLog(`HM-TS-7 : When the user enters text in the 'Where to?' field Suggested location should display`)
-    utils.successLog(`HM-TS-7 :  Selected location should display in the search bar`)
-    utils.logsaved(passLog, `HM-TS-7`, `Selected location should display in the search bar`)
-    utils.logsaved(passLog, `HM-TS-7`, `When the user enters text in the 'Where to?' field Suggested location should display`)
+    utils.successLog(
+      `HM-TS-7 : When the user enters text in the 'Where to?' field Suggested location should display`
+    );
+    utils.successLog(
+      `HM-TS-7 :  Selected location should display in the search bar`
+    );
+    utils.logsaved(
+      passLog,
+      `HM-TS-7`,
+      `Selected location should display in the search bar`
+    );
+    utils.logsaved(
+      passLog,
+      `HM-TS-7`,
+      `When the user enters text in the 'Where to?' field Suggested location should display`
+    );
     await firstChildElement.click();
-  }else{
-    utils.errorLog(`HM-TS-7 :  Selected location should display in the search bar`)
-    utils.errorLog(`HM-TS-7 : When the user enters text in the 'Where to?' field Suggested location should display`)
-    utils.logsaved(errorlog, `HM-TS-7`, `Selected location should display in the search bar`)
-    utils.logsaved(errorlog, `HM-TS-7`, `When the user enters text in the 'Where to?' field Suggested location should display`)
+  } else {
+    utils.errorLog(
+      `HM-TS-7 :  Selected location should display in the search bar`
+    );
+    utils.errorLog(
+      `HM-TS-7 : When the user enters text in the 'Where to?' field Suggested location should display`
+    );
+    utils.logsaved(
+      errorlog,
+      `HM-TS-7`,
+      `Selected location should display in the search bar`
+    );
+    utils.logsaved(
+      errorlog,
+      `HM-TS-7`,
+      `When the user enters text in the 'Where to?' field Suggested location should display`
+    );
   }
 
   await utils.sleep(2000);
@@ -133,43 +157,63 @@ const verifySearchBar = async (page, errorlog, passLog) => {
       };
     });
   });
-
-  const isCalendarOpen = searchbartext61321.some((obj) => obj.value.includes('\nSu\nMo'));
-  if (isCalendarOpen) {
-    utils.successLog(`HM-TC-08-01 : When the user clicks on the check-in and check-out, the calendar should open`)
-    utils.logsaved(passLog, `HM-TC-08-01`, `When the user clicks on the check-in and check-out, the calendar should open`)
-  } else {
-    utils.logsaved(errorlog, `HM-TC-08-01`, `When the user clicks on the check-in and check-out, the calendar should open`)
-    utils.errorLog(`HM-TC-08-01 : When the user clicks on the check-in and check-out, the calendar should open`)
-  }
-  const popoverSelector = 'popover-content';
-
-  // Check the value of the 'display' property to determine if the popover is open
-  const isPopoverOpen = await page.$eval(popoverSelector, (popover) => {
-    const displayValue = window.getComputedStyle(popover).getPropertyValue('display');
-    return displayValue !== 'none';
+  const calendarText = ["Clear dates", "Minimum nights vary"];
+  let calExistMenu = [];
+  let calnotExistMenu = [];
+  calendarText.map((search) => {
+    const match = searchbartext61321.some((obj) => obj.value.includes(search));
+    if (match) {
+      calExistMenu.push(search);
+    } else {
+      calnotExistMenu.push(search);
+    }
   });
-
-  if (isPopoverOpen) {
-    console.log('Popover is open.');
-    // You can perform additional actions when the popover is open.
-  } else {
-    console.log('Popover is not open.');
-  }
-
-
-  const calendarSelector=  await page.$(`#popover-body-:r9:`);
-
-  const calendarElement = await page.$(calendarSelector);
-  if (calendarElement !== null) {
-    utils.successLog(`HM-TS-7 : When the user enters text in the 'Where to?' field Suggested location should display`)
-    utils.successLog(`HM-TS-7 :  Selected location should display in the search bar`)
-    await calendarElement.click();
+  if (calExistMenu.length === calendarText.length) {
+    passLog.push({
+      case_id: "HM_TC_06",
+      message: `text missing ${calExistMenu.toString()} in the calendar`,
+    });
+    utils.successLog(
+      `HM_TC_06 :text missing ${calnotExistMenu.toString()} in the calendar `
+    );
   }else{
-    utils.errorLog(`HM-TS-7 :  Selected location should display in the search bar`)
-    utils.errorLog(`HM-TS-7 : When the user enters text in the 'Where to?' field Suggested location should display`)
+    errorlog.push({
+      case_id: "HM_TC_08-02",
+      message: `text missing ${calExistMenu.toString()} in the calendar` ,
+    });
+    utils.errorLog(
+      `HM_TC_08-02 : text missing ${calnotExistMenu.toString()} in the calendar `
+    );
+  }
+  const isCalendarOpen = searchbartext61321.some((obj) =>
+    obj.value.includes("\nSu\nMo")
+  );
+  if (isCalendarOpen) {
+    utils.successLog(
+      `HM-TC-08-01 : When the user clicks on the check-in and check-out, the calendar should open`
+    );
+    utils.logsaved(
+      passLog,
+      `HM-TC-08-01`,
+      `When the user clicks on the check-in and check-out, the calendar should open`
+    );
+  } else {
+    utils.logsaved(
+      errorlog,
+      `HM-TC-08-01`,
+      `When the user clicks on the check-in and check-out, the calendar should open`
+    );
+    utils.errorLog(
+      `HM-TC-08-01 : When the user clicks on the check-in and check-out, the calendar should open`
+    );
   }
 };
+const checkElMonthCal = async(page, errorLog, passLog)=>{
+  for (let i = 0; i < 11; i++) {
+    const element = array[i];
+    
+  }
+}
 exports.homePage = async (page, errorLog = [], passLog = []) => {
   // const browser = await puppeteer.launch({
   //   headless: false,
