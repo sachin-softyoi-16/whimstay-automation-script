@@ -87,7 +87,9 @@ const logInButtonVisible = async (page, messagelist, passLog) => {
     });
     // await signButton.click();
   } else {
-    utils.errorLog(`SU_TC_01: On home page Login In button not able to display.`);
+    utils.errorLog(
+      `SU_TC_01: On home page Login In button not able to display.`
+    );
     messagelist.push({
       case_id: "SU_TC_01",
       message: "On home page Login In button not able to display.",
@@ -325,10 +327,16 @@ const resetOtp = async (page, messagelist, passLog) => {
         await sleep(1000);
         const otpScreen = await checkButtonvisibilty(page, `Try again`);
         if (otpScreen) {
-          utils.successLog(`SI_TC_06 : Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`);
-          utils.errorLog(`SI_TC_08 : Resent button click and enter new one password but api is not verified latest otp. It's bug from api side.`);
+          utils.successLog(
+            `SI_TC_06 : Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`
+          );
+          utils.errorLog(
+            `SI_TC_08 : Resent button click and enter new one password but api is not verified latest otp. It's bug from api side.`
+          );
           utils.errorLog(`SI_TC_09 : New otp not verified from backend.`);
-          utils.errorLog(`SI_TC_10 : Do not allow user to login with OLD otp. it should display expire otp in red color. not getting color attribute`);
+          utils.errorLog(
+            `SI_TC_10 : Do not allow user to login with OLD otp. it should display expire otp in red color. not getting color attribute`
+          );
           passLog.push({
             case_id: "SI_TC_06",
             message: `Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`,
@@ -372,7 +380,9 @@ const resetOtp = async (page, messagelist, passLog) => {
           await page.type(otptextBoxSelector, otpcode, { delay: 100 });
         } else {
           console.log(`The text "${expectedText}" is not present on the page.`);
-          utils.errorLog(`SI_TC_06: Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`);
+          utils.errorLog(
+            `SI_TC_06: Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`
+          );
           messagelist.push({
             case_id: "SI_TC_06",
             message: `Once user enter valid mobile number it will redirect to the OTP screen where user have to enter 6 digit OTP.`,
@@ -658,26 +668,34 @@ const signUpflow22 = async (page, messagelist, passLog) => {
 
       const SI_TC_14 = await checkButtonvisibilty(page, `Log in with email`);
       if (!SI_TC_14) {
-        utils.errorLog(`SI_TC_14: When user click on Login button then "Continue with email" button should be display in login popup.`)
+        utils.errorLog(
+          `SI_TC_14: When user click on Login button then "Continue with email" button should be display in login popup.`
+        );
         messagelist.push({
           case_id: "SI_TC_14",
           message: `When user click on Login button then "Continue with email" button should be display in login popup.`,
         });
       } else {
-        utils.successLog(`SI_TC_14: When user click on Login button then "Continue with email" button should be display in login popup.`)
+        utils.successLog(
+          `SI_TC_14: When user click on Login button then "Continue with email" button should be display in login popup.`
+        );
         passLog.push({
           case_id: "SI_TC_14",
           message: `When user click on Login button then "Continue with email" button should be display in login popup.`,
         });
       }
       if (submitBtn) {
-        utils.errorLog(`SI_TC_06: The login button is disable with Invalid mobile number`)
+        utils.errorLog(
+          `SI_TC_06: The login button is disable with Invalid mobile number`
+        );
         messagelist.push({
           case_id: "SI_TC_06",
           message: `The login button is disable with Invalid mobile number`,
         });
       } else {
-        utils.successLog(`SI_TC_06: The login button is disable with Invalid mobile number`)
+        utils.successLog(
+          `SI_TC_06: The login button is disable with Invalid mobile number`
+        );
         passLog.push({
           case_id: "SI_TC_06",
           message: `The login button is disable with Invalid mobile number`,
@@ -695,7 +713,9 @@ const signUpflow22 = async (page, messagelist, passLog) => {
         });
 
         if (isTextPresent) {
-          utils.successLog(`SI_TC_11 : User will redirect to the sign up page and it will ask for require details.`);
+          utils.successLog(
+            `SI_TC_11 : User will redirect to the sign up page and it will ask for require details.`
+          );
           passLog.push({
             case_id: "SI_TC_11",
             message: `User will redirect to the sign up page and it will ask for require details.`,
@@ -732,13 +752,13 @@ const signUpflow22 = async (page, messagelist, passLog) => {
             (obj) => obj.value == expectedText
           );
           if (!termConditionText) {
-            utils.errorLog(`SI_TC_13 : Text not found`)
+            utils.errorLog(`SI_TC_13 : Text not found`);
             messagelist.push({
               case_id: "SI_TC_13",
               message: `Text not found`,
             });
           } else {
-            utils.successLog(`SI_TC_13 : Text not found`)
+            utils.successLog(`SI_TC_13 : Text not found`);
             passLog.push({
               case_id: "SI_TC_13",
               message: `Text not found`,
@@ -791,7 +811,9 @@ const signUpflow22 = async (page, messagelist, passLog) => {
             case_id: "SI_TC_11",
             message: `User will redirect to the sign up page and it will ask for require details.`,
           });
-          utils.errorLog(`SI_TC_11: User will redirect to the sign up page and it will ask for require details.`);
+          utils.errorLog(
+            `SI_TC_11: User will redirect to the sign up page and it will ask for require details.`
+          );
         }
       }
     } catch (error) {
@@ -810,7 +832,9 @@ const logOutFeature = async (page, messagelist, passLog) => {
       case_id: "SI_TC_07",
       message: `Once user enter 6 digit OTP then it will automatically redirect to the home screen.`,
     });
-    utils.successLog(`SI_TC_07: Once user enter 6 digit OTP then it will automatically redirect to the home screen.`);
+    utils.successLog(
+      `SI_TC_07: Once user enter 6 digit OTP then it will automatically redirect to the home screen.`
+    );
     await page.click(isLogin);
     await page.click(isLogin);
     await sleep(1000);
@@ -818,12 +842,14 @@ const logOutFeature = async (page, messagelist, passLog) => {
     await Promise.all(cookies.map((cookie) => page.deleteCookie(cookie)));
     await page.reload({ waitUntil: "networkidle0" });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     messagelist.push({
       case_id: "SI_TC_07",
       message: `Once user enter 6 digit OTP then it will automatically redirect to the home screen.`,
     });
-    utils.errorLog(`SI_TC_07: Once user enter 6 digit OTP then it will automatically redirect to the home screen.`)
+    utils.errorLog(
+      `SI_TC_07: Once user enter 6 digit OTP then it will automatically redirect to the home screen.`
+    );
     // throw `User not login`;
   }
 };
@@ -831,15 +857,16 @@ const runScript = async () => {
   let errorLog = [];
   let passLog = [];
   let page;
-  let browser;
+  // let browser;
   try {
-    browser = await puppeteer.launch({
+    const browser = await puppeteer.launch({
       headless: false,
       executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
     });
     page = await browser.newPage();
     await page.goto("https://uat.whimstay.com/");
-    await page.setViewport({ width: 1080, height: 864 });
+    await page.waitForTimeout(1000); // Wait for some time to ensure the page is loaded
+    await page.setViewport({ width: 1536, height: 864 });
     await sleep(2000);
     // await homePage(page, errorLog, passLog)
 
@@ -864,7 +891,7 @@ const runScript = async () => {
       `test case failed : ${errorLog.length}`
     );
     const resp = await signupflowController.signUp(page, errorLog, passLog);
-    await homePage(page, errorLog, passLog)
+    await homePage(page, errorLog, passLog);
     console.log("\x1b[32m%s\x1b[0m", `Test-case passed : ${passLog.length}`),
       console.log("\x1b[31m%s\x1b[0m", `test case failed : ${errorLog.length}`);
 

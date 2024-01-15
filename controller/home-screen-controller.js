@@ -1,6 +1,7 @@
 require("dotenv").config();
 const puppeteer = require("puppeteer");
 const utils = require("./utils");
+const moment = require("moment");
 
 const checkHeader = async (page, errorlog, passLog) => {
   const signuptxt = "Sign up";
@@ -176,10 +177,10 @@ const verifySearchBar = async (page, errorlog, passLog) => {
     utils.successLog(
       `HM_TC_06 :text missing ${calnotExistMenu.toString()} in the calendar `
     );
-  }else{
+  } else {
     errorlog.push({
       case_id: "HM_TC_08-02",
-      message: `text missing ${calExistMenu.toString()} in the calendar` ,
+      message: `text missing ${calExistMenu.toString()} in the calendar`,
     });
     utils.errorLog(
       `HM_TC_08-02 : text missing ${calnotExistMenu.toString()} in the calendar `
@@ -208,12 +209,122 @@ const verifySearchBar = async (page, errorlog, passLog) => {
     );
   }
 };
-const checkElMonthCal = async(page, errorLog, passLog)=>{
-  for (let i = 0; i < 11; i++) {
-    const element = array[i];
-    
+const checkElMonthCal = async (page, errorLog, passLog) => {
+  await utils.sleep(1000);
+  let dateTxt = moment().format("DD");
+  dateTxt = Number(dateTxt) + 1;
+  const checkInDate = await utils.checkButtonvisibilty(page, dateTxt);
+  const checkoutDate = await utils.checkButtonvisibilty(page, dateTxt + 3);
+  if (checkInDate && checkoutDate) {
+    await checkInDate.click();
+    await checkoutDate.click();
+    passLog.push({
+      case_id: "HM_TC_08-05",
+      message: ` When the check-in/check-out date is that date should display in the selected mode`,
+    });
+    utils.successLog(
+      `HM_TC_08-05 :  When the check-in/check-out date is that date should display in the selected mode`
+    );
+  } else {
+    errorlog.push({
+      case_id: "HM_TC_08-05",
+      message: ` When the check-in/check-out date is that date should display in the selected mode`,
+    });
+    utils.errorLog(
+      `HM_TC_08-05 :  When the check-in/check-out date is that date should display in the selected mode`
+    );
   }
-}
+
+  const isCheckInDate = await utils.gettingValueFrom(
+    page,
+    `input[name="start date"]`
+  );
+  const isCheckOutDate = await utils.gettingValueFrom(page, `#endDateInput`);
+  const isCheckInPlace = await utils.gettingValueFrom(
+    page,
+    `input[name="addressinput"]`
+  );
+  if (isCheckInDate && isCheckOutDate && isCheckInPlace) {
+    passLog.push({
+      case_id: "HM_TC_08-05",
+      message: `When the user selects any date that date should be in the Dark color, and the selected date should display in the check-in/check-out field`,
+    });
+    utils.successLog(
+      `HM_TC_08-05 :   When the user selects any date that date should be in the Dark color, and the selected date should display in the check-in/check-out field`
+    );
+  } else {
+    errorLog.push({
+      case_id: "HM_TC_08-05",
+      message: `When the user selects any date that date should be in the Dark color, and the selected date should display in the check-in/check-out field`,
+    });
+    utils.errorLog(
+      `HM_TC_08-05 : value not shown in the ${isCheckInDate} ${isCheckOutDate}${isCheckInPlace}`
+    );
+  }
+  // await page.waitForXPath(`//input[@placeholder='Add guests']`);
+
+  // await page.click('//inputinput[placeholder="Add guests"]');
+};
+const clearDate = async (page, errorLog, passLog) => {
+  await page.click(`#endDateInput`);
+  await utils.sleep(1000);
+  const clearBtn = await utils.checkButtonvisibilty(page, "Clear dates");
+  const isCheckOutDate = await utils.gettingValueFrom(page, `#endDateInput`);
+  const isCheckInDate = await utils.gettingValueFrom(
+    page,
+    `input[name="start date"]`
+  );
+  if (isCheckOutDate && isCheckInDate) {
+    utils.successLog(
+      `HM_TC_06 : When the user clicks on the Clear dates, the selected date should be unselected`
+    );
+    passLog.push({
+      case_id: "HM_TC_06",
+      message:
+        "When the user clicks on the Clear dates, the selected date should be unselected",
+    });
+  } else {
+    utils.errorLog(
+      `HM_TC_06 : When the user clicks on the Clear dates, the selected date should be unselected`
+    );
+    errorLog.push({
+      case_id: "HM_TC_06",
+      message:
+        "When the user clicks on the Clear dates, the selected date should be unselected",
+    });
+  }
+};
+
+const AddGuest = async (page, errorLog, passLog) => {
+  const xpath = `//input[@placeholder='Add guests']`;
+  await page.waitForXPath(xpath);
+  const [button] = await page.$x(xpath);
+  if (button) {
+    await button.click();
+  }
+  await utils.sleep(2000)
+  
+  const childCheck = `input[type="checkbox"]`;
+  await page.click(`#Pets`);
+
+
+  const xpath11 = `//button[@aria-label='Add']`;
+  await page.waitForXPath(xpath11);
+  const [adultBtn] = await page.$x(xpath11);
+  if (adultBtn) {
+    await adultBtn.click();
+  }
+
+  await page.waitForXPath(`//button[@aria-label='Add']`, { visible: true });
+
+  await page.$$eval(`button[aria-label='Add']`, (buttons) => {
+    buttons.forEach((button) => button.click());
+  });
+  const applyButtn = await utils.checkButtonvisibilty(page,'Apply');
+  if(applyButtn){
+    await applyButtn.click()
+  }
+};
 exports.homePage = async (page, errorLog = [], passLog = []) => {
   // const browser = await puppeteer.launch({
   //   headless: false,
@@ -222,9 +333,14 @@ exports.homePage = async (page, errorLog = [], passLog = []) => {
   // const page = await browser.newPage();
   // await page.goto("https://uat.whimstay.com/");
   // await page.setViewport({ width: 1080, height: 864 });
-  await checkHeader(page, errorLog, passLog); // test-case-1
-  await page.goto("https://uat.whimstay.com/");
+  // await checkHeader(page, errorLog, passLog); // test-case-1
+  // await page.goto("https://uat.whimstay.com/");
+
   await verifySearchBar(page, errorLog, passLog);
+  await checkElMonthCal(page, errorLog, passLog);
+  await clearDate(page, errorLog, passLog);
+  await checkElMonthCal(page, errorLog, passLog);
+  await AddGuest(page, errorLog, passLog);
   return {
     errorLog: errorLog,
     passLog: passLog,

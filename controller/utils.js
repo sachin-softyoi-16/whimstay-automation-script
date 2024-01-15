@@ -33,6 +33,15 @@ exports.checkButtonAvaibilty = async (page, button) => {
     console.log(error);
   }
 };
+exports.gettingValueFrom = async(page, value)=>{
+  await page.waitForSelector(value);
+
+    // Get the value of the text box using its name attribute
+    const textBoxValue = await page.$eval(value, (textBox) => {
+      return textBox.value;
+    });
+    return textBoxValue;
+}
 
 exports.sleep = async (milliseconds) => {
   return new Promise((resolve) => {
