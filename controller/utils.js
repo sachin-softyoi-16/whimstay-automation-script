@@ -69,6 +69,7 @@ exports.gettingTexts= async(page, xpathSelector)=>{
       return {
         name: childElement.tagName.toLowerCase(),
         value: childElement.innerText,
+        child : childElement
       };
     });
   });
@@ -134,4 +135,12 @@ exports.logsaved= (isArray , case_id, message)=>{
     message: message,
   });
   return isArray;
+}
+exports.checkTagAvaibleOrNot = async(page,element)=>{
+try {
+  await page.waitForSelector(element, { visible: true });
+return true;
+} catch (error) {
+  return  false
+}
 }

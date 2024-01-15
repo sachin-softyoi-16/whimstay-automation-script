@@ -868,7 +868,7 @@ const runScript = async () => {
     await page.waitForTimeout(1000); // Wait for some time to ensure the page is loaded
     await page.setViewport({ width: 1536, height: 864 });
     await sleep(2000);
-    // await homePage(page, errorLog, passLog)
+    await homePage(page, errorLog, passLog)
 
     await logInButtonVisible(page, errorLog, passLog); // test-case-1
     await checkLoginValidation(page, errorLog, passLog); // test-case-2

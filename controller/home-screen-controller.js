@@ -302,11 +302,56 @@ const AddGuest = async (page, errorLog, passLog) => {
   if (button) {
     await button.click();
   }
-  await utils.sleep(2000)
-  
+  await utils.sleep(2000);
+
+  const searchbartext = await page.$$eval(`section > *`, (childElements) => {
+    return childElements.map((childElement) => {
+      return {
+        name: childElement.tagName.toLowerCase(),
+        value: childElement.innerText,
+      };
+    });
+  });
+  const guestBoxText = [
+    "Adults",
+    "Ages 13 or above",
+    "Children",
+    "Ages 2-12",
+    "Pets",
+    "Are pets allowed?",
+    "Clear",
+    "Apply",
+  ];
+  let existMenu = [];
+  let notExistMenu = [];
+  guestBoxText.map((search) => {
+    const match = searchbartext.some((obj) => obj.value.includes(search));
+    if (match) {
+      existMenu.push(search);
+    } else {
+      notExistMenu.push(search);
+    }
+  });
+  if (existMenu.length === guestBoxText.length) {
+    passLog.push({
+      case_id: "HM_TC_09",
+      message: `The below Fields should be displayed on the add guest popup. ${existMenu.toString()} `,
+    });
+    utils.successLog(
+      `HM_TC_09 :The below Fields should be displayed on the add guest popup. ${existMenu.toString()}`
+    );
+  } else {
+    utils.errorLog(
+      `HM_TC_06:  The below Fields should be displayed on the add guest popup. ${notExistMenu.toString()} `
+    );
+    errorlog.push({
+      case_id: "HM_TC_06",
+      message: `The below Fields should be displayed on the add guest popup. ${notExistMenu.toString()} `,
+    });
+  }
+
   const childCheck = `input[type="checkbox"]`;
   await page.click(`#Pets`);
-
 
   const xpath11 = `//button[@aria-label='Add']`;
   await page.waitForXPath(xpath11);
@@ -320,10 +365,153 @@ const AddGuest = async (page, errorLog, passLog) => {
   await page.$$eval(`button[aria-label='Add']`, (buttons) => {
     buttons.forEach((button) => button.click());
   });
-  const applyButtn = await utils.checkButtonvisibilty(page,'Apply');
-  if(applyButtn){
-    await applyButtn.click()
+  const applyButtn = await utils.checkButtonvisibilty(page, "Apply");
+  if (applyButtn) {
+    await applyButtn.click();
   }
+};
+
+const featureDeal = async (page, errorLog, passLog) => {
+  const findHeading = await utils.findText(
+    page,
+    `//h2[contains(text(), 'Featured last-minute deals')]`
+  );
+  if (findHeading) {
+    passLog.push({
+      case_id: "HM_TC_11",
+      message: `Featured last-minute deals section not visible`,
+    });
+    utils.successLog(
+      `HM_TC_11 :Featured last-minute deals section not visible`
+    );
+  } else {
+    errorLog.push({
+      case_id: "HM_TC_11",
+      message: `Featured last-minute deals section not visible`,
+    });
+    utils.errorLog(`HM_TC_11 :Featured last-minute deals section not visible`);
+  }
+  const searchbartext = await page.$$eval(`article > *`, (childElements) => {
+    return childElements.map((childElement) => {
+      return {
+        name: childElement.tagName.toLowerCase(),
+        value: childElement.innerText,
+      };
+    });
+  });
+  const isSaveButton = searchbartext.some((obj) => obj.value.includes(`Save`));
+  if (isSaveButton) {
+    passLog.push({
+      case_id: "HM_TC_12-01",
+      message: `Save price tag dispaly.`,
+    });
+    utils.successLog(`HM_TC_12-01 :Save price tag dispaly.`);
+  } else {
+    passLog.push({
+      case_id: "HM_TC_12-01",
+      message: `Save price tag not dispaly.`,
+    });
+    utils.successLog(`HM_TC_12-01 :Save price tag not dispaly.`);
+  }
+  try {
+    await page.waitForSelector(`.slick-active  > div > img`, { visible: true });
+    console.log("The image is visible.");
+    passLog.push({
+      case_id: "HM_TC_12-02",
+      message: `Property image.`,
+    });
+    utils.successLog(`HM_TC_12-02 :Property image.`);
+  } catch (error) {
+    passLog.push({
+      case_id: "HM_TC_12-02",
+      message: `Property image`,
+    });
+    utils.successLog(`HM_TC_12-02 :Property image`);
+  }
+
+  const favIcon = `//button[@aria-label='Options']`;
+  await page.waitForXPath(favIcon);
+  const [favIconBtn] = await page.$x(favIcon);
+  if (favIconBtn) {
+    passLog.push({
+      case_id: "HM_TC_12-03",
+      message: `Favorite icon (Heart)`,
+    });
+    utils.successLog(`HM_TC_12-03 :Favorite icon (Heart)`);
+  } else {
+    errorLog.push({
+      case_id: "HM_TC_12-03",
+      message: `Favorite icon (Heart)`,
+    });
+    utils.errorLog(`HM_TC_12-03 :Favorite icon (Heart)`);
+  }
+  const fivDoct = await page.$$eval(`.slick-dots  > li`, (childElements) => {
+    return childElements.map((childElement) => {
+      return {
+        name: childElement.tagName.toLowerCase(),
+        childElement: childElement.innerHTML,
+      };
+    });
+  });
+
+  let fivexistMenu = [];
+  let notFivExistMenu = [];
+  [1,2,3,4,5].map((search) => {
+    const match = searchbartext.some((obj) => obj.value.includes(search));
+    if (match) {
+      fivexistMenu.push(search);
+    } else {
+      notFivExistMenu.push(search);
+    }
+  });
+
+  if(fivexistMenu.length == 5){
+    passLog.push({
+      case_id: "HM_TC_12-04",
+      message: ` Image 5 Dots`,
+    });
+    utils.successLog(`HM_TC_12-04 : Image 5 Dots`);
+  }else{
+    errorLog.push({
+      case_id: "HM_TC_12-04",
+      message: ` Image 5 Dots`,
+    });
+    utils.errorLog(`HM_TC_12-04 : Image 5 Dots`);
+  }
+
+
+const propertLocation = await utils.checkTagAvaibleOrNot(page, `a.chakra-linkbox__overlay`);
+if(propertLocation){
+  passLog.push({
+    case_id: "HM_TC_12-05",
+    message: `  > Property Location`,
+  });
+  utils.successLog(`HM_TC_12-05 :  > Property Location`);
+}else{
+  errorLog.push({
+    case_id: "HM_TC_12-05",
+    message: `  > Property Location`,
+  });
+  utils.errorLog(`HM_TC_12-05 :  > Property Location`);
+}
+  // const propertyImage =
+  const rattingBtn = `//svg[@fill='#D9B800']`;
+  await page.waitForXPath(favIcon);
+  const [rattingBtn13] = await page.$x(favIcon);
+  if (rattingBtn13) {
+    passLog.push({
+      case_id: "HM_TC_12-06",
+      message: `Ratings`,
+    });
+    utils.successLog(`HM_TC_12-06 :Ratings`);
+  }else{
+    errorLog.push({
+      case_id: "HM_TC_12-06",
+      message: `Ratings`,
+    });
+    utils.errorLog(`HM_TC_12-06 :Ratings`);
+  }
+  console.log(searchbartext);
 };
 exports.homePage = async (page, errorLog = [], passLog = []) => {
   // const browser = await puppeteer.launch({
@@ -335,7 +523,7 @@ exports.homePage = async (page, errorLog = [], passLog = []) => {
   // await page.setViewport({ width: 1080, height: 864 });
   // await checkHeader(page, errorLog, passLog); // test-case-1
   // await page.goto("https://uat.whimstay.com/");
-
+  await featureDeal(page, errorLog, passLog);
   await verifySearchBar(page, errorLog, passLog);
   await checkElMonthCal(page, errorLog, passLog);
   await clearDate(page, errorLog, passLog);
