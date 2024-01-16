@@ -456,7 +456,7 @@ const featureDeal = async (page, errorLog, passLog) => {
 
   let fivexistMenu = [];
   let notFivExistMenu = [];
-  [1,2,3,4,5].map((search) => {
+  [1, 2, 3, 4, 5].map((search) => {
     const match = searchbartext.some((obj) => obj.value.includes(search));
     if (match) {
       fivexistMenu.push(search);
@@ -465,13 +465,13 @@ const featureDeal = async (page, errorLog, passLog) => {
     }
   });
 
-  if(fivexistMenu.length == 5){
+  if (fivexistMenu.length == 5) {
     passLog.push({
       case_id: "HM_TC_12-04",
       message: ` Image 5 Dots`,
     });
     utils.successLog(`HM_TC_12-04 : Image 5 Dots`);
-  }else{
+  } else {
     errorLog.push({
       case_id: "HM_TC_12-04",
       message: ` Image 5 Dots`,
@@ -479,40 +479,302 @@ const featureDeal = async (page, errorLog, passLog) => {
     utils.errorLog(`HM_TC_12-04 : Image 5 Dots`);
   }
 
-
-const propertLocation = await utils.checkTagAvaibleOrNot(page, `a.chakra-linkbox__overlay`);
-if(propertLocation){
-  passLog.push({
-    case_id: "HM_TC_12-05",
-    message: `  > Property Location`,
-  });
-  utils.successLog(`HM_TC_12-05 :  > Property Location`);
-}else{
-  errorLog.push({
-    case_id: "HM_TC_12-05",
-    message: `  > Property Location`,
-  });
-  utils.errorLog(`HM_TC_12-05 :  > Property Location`);
-}
+  const propertLocation = await utils.checkTagAvaibleOrNot(
+    page,
+    `a.chakra-linkbox__overlay`
+  );
+  if (propertLocation) {
+    passLog.push({
+      case_id: "HM_TC_12-05",
+      message: `  > Property Location`,
+    });
+    utils.successLog(`HM_TC_12-05 :  > Property Location`);
+  } else {
+    errorLog.push({
+      case_id: "HM_TC_12-05",
+      message: `  > Property Location`,
+    });
+    utils.errorLog(`HM_TC_12-05 :  > Property Location`);
+  }
   // const propertyImage =
-  const rattingBtn = `//svg[@fill='#D9B800']`;
-  await page.waitForXPath(favIcon);
-  const [rattingBtn13] = await page.$x(favIcon);
-  if (rattingBtn13) {
+  const fillAttribute = await page.$eval("path", (svg) => {
+    return (
+      svg.getAttribute("d") ===
+      `M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z`
+    );
+  });
+
+  const fiv55Doct = await page.$$eval(`div  > svg`, (childElements) => {
+    return childElements.map((childElement) => {
+      return {
+        name: childElement.tagName.toLowerCase(),
+        childElement: childElement.innerHTML,
+      };
+    });
+  });
+
+  const rattingBtn = fiv55Doct.some((obj) =>
+    obj.childElement.includes(
+      `<path d="M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z"></path>`
+    )
+  );
+  if (rattingBtn) {
     passLog.push({
       case_id: "HM_TC_12-06",
       message: `Ratings`,
     });
     utils.successLog(`HM_TC_12-06 :Ratings`);
-  }else{
+  } else {
     errorLog.push({
       case_id: "HM_TC_12-06",
       message: `Ratings`,
     });
     utils.errorLog(`HM_TC_12-06 :Ratings`);
   }
-  console.log(searchbartext);
+
+  let propertyName = await page.$$eval(
+    `div > .disable_click`,
+    (childElements) => {
+      return childElements.map((childElement) => {
+        return {
+          name: childElement.tagName.toLowerCase(),
+          className: childElement.className,
+          childElement: childElement.innerText,
+        };
+      });
+    }
+  );
+  const propertiesName = propertyName.filter(
+    (prooperty) =>
+      prooperty.className ===
+      "disable_click line-clamp-1 py-[1px] text-sm text-[#717171]"
+  );
+  if (propertiesName.length > 0) {
+    passLog.push({
+      case_id: "HM_TC_12-07",
+      message: `Property Name`,
+    });
+    utils.successLog(`HM_TC_12-07 :Property Name`);
+  } else {
+    errorLog.push({
+      case_id: "HM_TC_12-07",
+      message: `Property Name`,
+    });
+    utils.errorLog(`HM_TC_12-07 :Property Name`);
+  }
+
+  const badRoom = propertyName.some((obj) =>
+    obj.childElement.includes("bedrooms")
+  );
+  const guesRoom = propertyName.some((obj) =>
+    obj.childElement.includes("guests")
+  );
+  const nights = propertyName.some((obj) =>
+    obj.childElement.includes("nights")
+  );
+  if (badRoom && guesRoom) {
+    passLog.push({
+      case_id: "HM_TC_12-08",
+      message: `Bedrooms, Beds, Guests`,
+    });
+    utils.successLog(`HM_TC_12-08 :Bedrooms, Beds, Guests`);
+  } else {
+    errorLog.push({
+      case_id: "HM_TC_12-08",
+      message: `Bedrooms, Beds, Guests`,
+    });
+    utils.errorLog(`HM_TC_12-08 :Bedrooms, Beds, Guests`);
+  }
+  if (nights) {
+    passLog.push({
+      case_id: "HM_TC_12-09",
+      message: `Nights and Dates`,
+    });
+    utils.successLog(`HM_TC_12-09 :Nights and Dates`);
+  } else {
+    errorLog.push({
+      case_id: "HM_TC_12-09",
+      message: `Nights and Dates`,
+    });
+    utils.errorLog(`HM_TC_12-09 :Nights and Dates`);
+  }
+  let taxes = await page.$$eval(`article > * `, (childElements) => {
+    return childElements.map((childElement) => {
+      return {
+        name: childElement.tagName.toLowerCase(),
+        className: childElement.className,
+        childElement: childElement.innerText,
+      };
+    });
+  });
+  taxes = taxes.some((obj) => obj.childElement.includes("total before taxes"));
+  if (taxes) {
+    passLog.push({
+      case_id: "HM_TC_12-10",
+      message: `Save price and Total before taxes`,
+    });
+    utils.successLog(`HM_TC_12-10 :Save price and Total before taxes`);
+  } else {
+    errorLog.push({
+      case_id: "HM_TC_12-10",
+      message: `Save price and Total before taxes`,
+    });
+    utils.errorLog(`HM_TC_12-10 :Save price and Total before taxes`);
+  }
 };
+
+// string Deals on vacation rentals for groups
+const luxuryVacationRentals = async (page, errorLog, passLog, testCast, title, link_title) => {
+  try {
+    const findHeading = await utils.findText(
+      page,
+      `//h3[contains(text(), '${title}')]`
+    );
+    if (findHeading) {
+      passLog.push({
+        case_id: "${testCast}",
+        message: `${title} section not visible`,
+      });
+      utils.successLog(
+        `${testCast} :${title} section not visible`
+      );
+    } else {
+      errorLog.push({
+        case_id: "${testCast}",
+        message: `${title} section not visible`,
+      });
+      utils.errorLog(
+        `${testCast} :${title} section not visible`
+      );
+    }
+    const xpathExpression = `//h3[contains(text(), '${title}')]`;
+
+    const textElementHandle = await page.waitForXPath(xpathExpression);
+
+    // Get the grandparent div's class name
+    const grandparentDivClassName = await page.evaluate((element) => {
+      const grandparentDiv = element.closest("div")?.parentNode;
+
+      // Return an object with class name and data from two child elements
+      if (grandparentDiv) {
+        const className = grandparentDiv.classList.value;
+        const childData1 =
+          grandparentDiv.querySelector(".child1-selector")?.textContent;
+        const childData2 =
+          grandparentDiv.querySelector(".hideScrollBar ")?.textContent;
+
+        return { className, childData1, childData2 };
+      }
+
+      return null;
+    }, textElementHandle);
+    const propertiesCount = grandparentDivClassName.childData2
+      .split("Total before taxes")
+      .filter((n) => n);
+    if (propertiesCount.length >= 1 && propertiesCount.length <= 4) {
+      passLog.push({
+        case_id: `${testCast}-1`,
+        message: `${title} section not visible`,
+      });
+      utils.successLog(
+        `${testCast}-1 :${title} section not visible`
+      );
+    } else {
+      errorLog.push({
+        case_id: `${testCast}-1`,
+        message: `${title} section not visible`,
+      });
+      utils.errorLog(
+        `${testCast}-1 :${title} section not visible`
+      );
+      return;
+    }
+    const findLink = await utils.findText(
+      page,
+      `//a[contains(text(), 'Find deals on ${link_title}')]`
+    );
+    if (findLink) {
+      const previousURL = await page.url();
+      await findLink.click();
+      passLog.push({
+        case_id: `${testCast}-02`,
+        message: `Find Deals on ${title} - hyperlink should display`,
+      });
+      utils.successLog(
+        `${testCast}-02 :Find Deals on ${title} - hyperlink should display`
+      );
+     await utils.sleep(10000);
+      const currentURL = await page.url();
+      if (previousURL != currentURL) {
+        passLog.push({
+          case_id: `${testCast}-03`,
+          message: `redirection`,
+        });
+        utils.successLog(
+          `${testCast}-03 :redirection`
+        );
+      }else{
+        errorLog.push({
+          case_id: `${testCast}-03`,
+          message: `redirection`,
+        });
+        utils.errorLog(
+          `${testCast}-03 :redirection`
+        );
+      }
+
+    } else {
+      errorLog.push({
+        case_id: "HM_TC_13-02",
+        message: `Find Deals on luxury vacation rentals - hyperlink should display`,
+      });
+      utils.errorLog(
+        `HM_TC_13-02 :Find Deals on luxury vacation rentals - hyperlink should display`
+      );
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const propertyVerification = async(page, errorLog, passLog)=>{
+  try {
+    let images = await page.$$eval('img', (imgElements) => {
+      return imgElements.map((img) => img.src);
+    });
+    const imageDomain =  `https://assets.whimstay.com/`
+    images = images.filter((img)=>img.startsWith(imageDomain));
+    const pmsList = ['8803077', 'cabovillas', 'exceptionalstays', 'movingmountains'];
+    let isExist = true;
+    for (let i = 0; i < images.length; i++) {
+      const imgUrl = images[i].substring(imageDomain.length, images[0].length).split('/')
+      isExist = pmsList.some((obj)=>obj == imgUrl[0] )
+      console.log(isExist)
+      if(!isExist){
+        errorLog.push({
+          case_id: "HM_TC_13-04",
+          message: `"CaboVillas, Exceptional Stays, Exclusive 30A, and Moving Mountains" PMC properties should display`,
+        });
+        utils.errorLog(
+          `HM_TC_13-04 :"CaboVillas, Exceptional Stays, Exclusive 30A, and Moving Mountains" PMC properties should display`
+        );
+        break;
+      }
+    }
+    if(isExist){
+      passLog.push({
+        case_id: "HM_TC_13-04",
+        message: `"CaboVillas, Exceptional Stays, Exclusive 30A, and Moving Mountains" PMC properties should display`,
+      });
+      utils.successLog(
+        `HM_TC_13-04 :"CaboVillas, Exceptional Stays, Exclusive 30A, and Moving Mountains" PMC properties should display`
+      );
+    }
+  } catch (error) {
+    console.log(`propertyVerification`, error)
+  }
+}
+
 exports.homePage = async (page, errorLog = [], passLog = []) => {
   // const browser = await puppeteer.launch({
   //   headless: false,
@@ -523,11 +785,24 @@ exports.homePage = async (page, errorLog = [], passLog = []) => {
   // await page.setViewport({ width: 1080, height: 864 });
   // await checkHeader(page, errorLog, passLog); // test-case-1
   // await page.goto("https://uat.whimstay.com/");
-  await featureDeal(page, errorLog, passLog);
+  await utils.sleep(2000);
+  await luxuryVacationRentals(page, errorLog, passLog,'HM_TC_13' , 'vacation rentals for groups', `stays for groups`);
+  await propertyVerification(page, errorLog, passLog);
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(2000);
+  await luxuryVacationRentals(page, errorLog, passLog,'HM_TC_14' , 'vacation rentals with pools', `vacation rentals with pools`);
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(2000);
+  await luxuryVacationRentals(page, errorLog, passLog,'HM_TC_15' , ' pet friendly vacation rentals', `pet friendly vacation rentals`);
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(2000);
+
   await verifySearchBar(page, errorLog, passLog);
   await checkElMonthCal(page, errorLog, passLog);
   await clearDate(page, errorLog, passLog);
   await checkElMonthCal(page, errorLog, passLog);
+  await featureDeal(page, errorLog, passLog);
+  // search functionality
   await AddGuest(page, errorLog, passLog);
   return {
     errorLog: errorLog,
