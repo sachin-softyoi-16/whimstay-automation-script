@@ -775,6 +775,34 @@ const propertyVerification = async(page, errorLog, passLog)=>{
   }
 }
 
+const popularDesitination = async (page, errorLog, passLog)=>{
+  try {
+    const findHeading = await utils.findText(
+      page,
+      `//h3[contains(text(), '${title}')]`
+    );
+    if (findHeading) {
+      passLog.push({
+        case_id: "${testCast}",
+        message: `${title} section not visible`,
+      });
+      utils.successLog(
+        `${testCast} :${title} section not visible`
+      );
+    } else {
+      errorLog.push({
+        case_id: "${testCast}",
+        message: `${title} section not visible`,
+      });
+      utils.errorLog(
+        `${testCast} :${title} section not visible`
+      );
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 exports.homePage = async (page, errorLog = [], passLog = []) => {
   // const browser = await puppeteer.launch({
   //   headless: false,
