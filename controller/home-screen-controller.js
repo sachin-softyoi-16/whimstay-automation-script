@@ -703,7 +703,7 @@ const luxuryVacationRentals = async (page, errorLog, passLog, testCast, title, l
       utils.successLog(
         `${testCast}-02 :Find Deals on ${title} - hyperlink should display`
       );
-     await utils.sleep(10000);
+      await utils.sleep(10000);
       const currentURL = await page.url();
       if (previousURL != currentURL) {
         passLog.push({
@@ -713,7 +713,7 @@ const luxuryVacationRentals = async (page, errorLog, passLog, testCast, title, l
         utils.successLog(
           `${testCast}-03 :redirection`
         );
-      }else{
+      } else {
         errorLog.push({
           case_id: `${testCast}-03`,
           message: `redirection`,
@@ -737,20 +737,20 @@ const luxuryVacationRentals = async (page, errorLog, passLog, testCast, title, l
   }
 };
 
-const propertyVerification = async(page, errorLog, passLog)=>{
+const propertyVerification = async (page, errorLog, passLog) => {
   try {
     let images = await page.$$eval('img', (imgElements) => {
       return imgElements.map((img) => img.src);
     });
-    const imageDomain =  `https://assets.whimstay.com/`
-    images = images.filter((img)=>img.startsWith(imageDomain));
+    const imageDomain = `https://assets.whimstay.com/`
+    images = images.filter((img) => img.startsWith(imageDomain));
     const pmsList = ['8803077', 'cabovillas', 'exceptionalstays', 'movingmountains'];
     let isExist = true;
     for (let i = 0; i < images.length; i++) {
       const imgUrl = images[i].substring(imageDomain.length, images[0].length).split('/')
-      isExist = pmsList.some((obj)=>obj == imgUrl[0] )
+      isExist = pmsList.some((obj) => obj == imgUrl[0])
       console.log(isExist)
-      if(!isExist){
+      if (!isExist) {
         errorLog.push({
           case_id: "HM_TC_13-04",
           message: `"CaboVillas, Exceptional Stays, Exclusive 30A, and Moving Mountains" PMC properties should display`,
@@ -761,7 +761,7 @@ const propertyVerification = async(page, errorLog, passLog)=>{
         break;
       }
     }
-    if(isExist){
+    if (isExist) {
       passLog.push({
         case_id: "HM_TC_13-04",
         message: `"CaboVillas, Exceptional Stays, Exclusive 30A, and Moving Mountains" PMC properties should display`,
@@ -775,7 +775,7 @@ const propertyVerification = async(page, errorLog, passLog)=>{
   }
 }
 
-const popularDesitination = async (page, errorLog, passLog)=>{
+const popularDesitination = async (page, errorLog, passLog, testCast, title) => {
   try {
     const findHeading = await utils.findText(
       page,
@@ -784,22 +784,375 @@ const popularDesitination = async (page, errorLog, passLog)=>{
     if (findHeading) {
       passLog.push({
         case_id: "${testCast}",
-        message: `${title} section not visible`,
+        message: `${title} section visible`,
       });
       utils.successLog(
-        `${testCast} :${title} section not visible`
+        `${testCast} :${title} section visible`
       );
     } else {
       errorLog.push({
-        case_id: "${testCast}",
+        case_id: `${testCast}`,
         message: `${title} section not visible`,
       });
       utils.errorLog(
         `${testCast} :${title} section not visible`
       );
     }
+    const xpathExpression = `//h3[contains(text(), '${title}')]`;
+
+    const textElementHandle = await page.waitForXPath(xpathExpression);
+
+    // Get the grandparent div's class name
+    const grandparentDivClassName = await page.evaluate((element) => {
+      const grandparentDiv = element.closest("div")?.parentNode;
+      // Return an object with class name and data from two child elements
+      if (grandparentDiv) {
+        const className = grandparentDiv.classList.value;
+        const childData1 =
+          grandparentDiv.querySelector(".child1-selector")?.textContent;
+        const childData2 =
+          grandparentDiv.querySelector(".hideScrollBar ")?.textContent;
+
+        return { className, childData1, childData2 };
+      }
+
+      return null;
+    }, textElementHandle);
+    const pattern = /, ([A-Za-z]{2})/g;
+
+    const matches = grandparentDivClassName.childData2.match(pattern);
+    const resultArray = matches ? grandparentDivClassName.childData2.trim().split(pattern).filter((n) => n) : [grandparentDivClassName.childData2];
+
+    if (resultArray.length === 4 || resultArray.length === 8) {
+      passLog.push({
+        case_id: `${testCast}-1`,
+        message: `In ${title} section 4 card is visible`,
+      });
+      utils.successLog(
+        `${testCast}-1 :In ${title} section 4 card is visible`
+      );
+    } else {
+      errorLog.push({
+        case_id: `${testCast}-1`,
+        message: `In ${title} section 4 card is not visible`,
+      });
+      utils.errorLog(
+        `${testCast}-1 :In ${title} section 4 card is not visible`
+      );
+      return;
+    }
+    const viewMoreBtn = await utils.findText(
+      page,
+      `//button[contains(text(), 'View more cities')]`
+    );
+    if (viewMoreBtn) {
+      passLog.push({
+        case_id: `${testCast}-2`,
+        message: `In ${title} section 4 View more cities button is visible`,
+      });
+      utils.successLog(
+        `${testCast}-2 :In ${title} section 4 View more cities button is visible`
+      );
+      await viewMoreBtn.click()
+      await utils.sleep(2000);
+      const childCard = await utils.getParentToChildContent(page, `//h3[contains(text(), '${title}')]`);
+      const childCardMatches = childCard.childData2.match(pattern);
+      const childProperties = childCardMatches ? childCard.childData2.trim().split(pattern).filter((n) => n) : [childCard.childData2];
+      if (childProperties.length === 40) {
+        let results = [];
+        for (let i = 0; i < childProperties.length; i++) {
+          if (i % 2 == 0) {
+            if (childProperties[i + 2] === childProperties[i]) {
+              console.log(childProperties[i], childProperties[i] + 2)
+              results.push(sorted_arr[i]);
+            }
+          }
+        }
+        if (results.length > 0) {
+          errorLog.push({
+            case_id: `${testCast}-04`,
+            message: `In ${title} Duplicate destination should be display ${results.toString()}`,
+          });
+          utils.errorLog(
+            `${testCast}-04 :In ${title} Duplicate destination should be display ${results.toString()}`
+          );
+        } else {
+          passLog.push({
+            case_id: `${testCast}-04`,
+            message: `In ${title} Duplicate destination should not display`,
+          });
+          utils.successLog(
+            `${testCast}-04 :In ${title} Duplicate destination should not display`
+          );
+        }
+        passLog.push({
+          case_id: `${testCast}-3`,
+          message: `In ${title} section 20 properties card should display in the 4*5 section`,
+        });
+        utils.successLog(
+          `${testCast}-3 :In ${title} section 20 properties card should display in the 4*5 section`
+        );
+        const xpathExpression = `//p[contains(text(), '${childProperties[0]}, ${childProperties[1]}')]`;
+        const paragraphElementHandle = await page.waitForXPath(xpathExpression);
+        // Get the parent <p> element
+        const locationBtn = await page.evaluate((element) => {
+          const grandparentDiv = element.closest("div")?.parentNode;
+          if (grandparentDiv) {
+            const className = grandparentDiv.classList.value;
+            const childData1 =
+              grandparentDiv.querySelector(".child1-selector")?.textContent;
+            const childData2 =
+              grandparentDiv.querySelector(`.chakra-linkbox__overlay `)?.href;
+            return { className, childData1, childData2 };
+          }
+          return null;
+        }, paragraphElementHandle);
+        if (locationBtn) {
+          const previousURL = await page.url();
+          await page.goto(locationBtn.childData2);
+          await utils.sleep(10000);
+          const currentURL = await page.url();
+          if (previousURL != currentURL) {
+            passLog.push({
+              case_id: `${testCast}-04`,
+              message: `When the user clicks on any destination, the listing page should open`,
+            });
+            utils.successLog(
+              `${testCast}-04 :When the user clicks on any destination, the listing page should open`
+            );
+          } else {
+            errorLog.push({
+              case_id: `${testCast}-04`,
+              message: `When the user clicks on any destination, the listing page should open`,
+            });
+            utils.errorLog(
+              `${testCast}-04 :When the user clicks on any destination, the listing page should open`
+            );
+          }
+        }
+
+      } else {
+        errorLog.push({
+          case_id: `${testCast}-3`,
+          message: `In ${title} section 20 properties card should display in the 4*5 section is not visible`,
+        });
+        utils.errorLog(
+          `${testCast}-3 :In ${title} section 20 properties card should display in the 4*5 section is not visible`
+        );
+        return;
+      }
+    } else {
+      errorLog.push({
+        case_id: `${testCast}-2`,
+        message: `In ${title} section 4 View more cities button is not visible`,
+      });
+      utils.errorLog(
+        `${testCast}-2 :In ${title} section 4 View more cities button is not visible`
+      );
+      return;
+    }
   } catch (error) {
     console.log(error)
+  }
+}
+
+const verifyDestinations = async (page, errorLog, passLog, testCast, title) => {
+  try {
+    const findHeading = await utils.findText(
+      page,
+      `//h3[contains(text(), '${title}')]`
+    );
+    if (findHeading) {
+      utils.logsaved(passLog, `${testCast}`, `${title} section visible`)
+      utils.successLog(`${testCast} :${title} section visible`);
+    } else {
+      utils.logsaved(errorLog, `${testCast}`, `${title} section visible`)
+      utils.errorLog(
+        `${testCast} :${title} section not visible`
+      );
+    }
+    const children = await utils.getParentToChildrens(page, `//h3[contains(text(), '${title}')]`, '.grid-cols-1 ');
+    const linkData = children.childData2.split('\n');
+    if (linkData.length === 16) {
+      const duplicateLocation = utils.findDuplicates(linkData);
+      if (duplicateLocation.length > 0) {
+        utils.logsaved(errorLog, `${testCast}-03`, `Duplicate destination display ${duplicateLocation.toString()}`)
+        utils.errorLog(errorLog, `${testCast}-03 : Duplicate destination display ${duplicateLocation.toString()}`)
+      } else {
+        utils.logsaved(passLog, `${testCast}-03`, `Duplicate destination should not display`)
+        utils.successLog(`${testCast}-03 : Duplicate destination should not display`);
+      }
+      utils.logsaved(passLog, `${testCast}-01`, `16 Destination hyperlink should display`)
+      utils.successLog(
+        `${testCast}-01 :${title} 16 Destination hyperlink should display`
+      );
+    } else {
+      utils.logsaved(errorLog, `${testCast}-01`, `16 Destination hyperlink not display`)
+      utils.errorLog(`${testCast}-01 :${title} 16 Destination hyperlink not display`);
+    }
+    if (children?.children) {
+      const previousURL = await page.url();
+      await page.goto(children?.children);
+      await utils.sleep(10000);
+      const currentURL = await page.url();
+      if (previousURL != currentURL) {
+        utils.logsaved(passLog, `${testCast}-02`, `When the user clicks on any destination, the listing page should open`);
+        utils.successLog(
+          `${testCast}-02 :When the user clicks on any destination, the listing page should open`
+        );
+      } else {
+        utils.logsaved(errorLog, `${testCast}-02`, `When the user clicks on any destination, the listing page should open`);
+        utils.errorLog(
+          `${testCast}-02 :When the user clicks on any destination, the listing page should open`
+        );
+      }
+    }
+  } catch (error) {
+    console.log(`verifyDestinations`, error);
+  }
+}
+
+const guestSaying = async (page, errorLog, passLog, testCast, title) => {
+  try {
+    const findHeading = await utils.findText(
+      page,
+      `//h3[contains(text(), '${title}')]`
+    );
+    if (findHeading) {
+      utils.logsaved(passLog, `${testCast}`, `${title} section visible`)
+      utils.successLog(`${testCast} :${title} section visible`);
+    } else {
+      utils.logsaved(errorLog, `${testCast}`, `${title} section visible`)
+      utils.errorLog(
+        `${testCast} :${title} section not visible`
+      );
+      return;
+    }
+    const textElementHandle = await page.waitForXPath(`//h3[contains(text(), '${title}')]`);
+    // Get the grandparent div's class name
+    const grandparentDivClassName = await page.evaluate((element) => {
+      const grandparentDiv = element.closest("div")?.parentNode;
+      // Return an object with class name and data from two child elements
+      if (grandparentDiv) {
+        const className = grandparentDiv.classList.value;
+        const childData1 =
+          grandparentDiv.querySelector(".child1-selector")?.textContent;
+        const childData2 =
+          grandparentDiv.querySelector('.slick-slider  ')?.innerText;
+        const childres =
+          grandparentDiv.querySelector('.slick-list  ')?.innerHTML;
+        return { className, childData1, childData2, childres };
+      }
+      return null;
+    }, textElementHandle);
+    const sliderValue = grandparentDivClassName.childData2.split('\n').filter((n) => n);
+    const totalStart = grandparentDivClassName.childres.split('</svg>').filter((n) => n);
+    console.log(grandparentDivClassName)
+    const nextbtn = sliderValue.some((nextBtn) => nextBtn == ' Next');
+    const previous = sliderValue.some((nextBtn) => nextBtn == ' Previous');
+    if (sliderValue.length >= 24) {
+      utils.logsaved(passLog, `${testCast}-01`, `Total 11 review card should displayed`)
+      utils.successLog(`${testCast}-01 :Total 11 review card should displayed`);
+    } else {
+      utils.logsaved(errorLog, `${testCast}-01`, `Total 11 review card not displayed`)
+      utils.errorLog(`${testCast}-01 :${title}  Total 11 review card not displayed`);
+    }
+    if (nextbtn && previous) {
+      utils.logsaved(passLog, `${testCast}-02`, ` Next and Previous button should display`)
+      utils.successLog(`${testCast}-02 : Next and Previous button should display`);
+    } else {
+      utils.logsaved(errorLog, `${testCast}-02`, `Next and Previous button not display`)
+      utils.errorLog(`${testCast}-02 :${title}  Next and Previous button not display`);
+    }
+    if (totalStart.length === 56) {
+      utils.logsaved(passLog, `HM_TC_22-01`, `In user review card Star should be display`)
+      utils.successLog(`HM_TC_22-01 : In user review card Star should be display`);
+    } else {
+      utils.logsaved(errorLog, `HM_TC_22-01`, `In user review card Star not display`)
+      utils.errorLog(`HM_TC_22-01 :${title}  In user review card Star not display`);
+    }
+    const userreviewLocation = sliderValue.some((nextBtn) => nextBtn.includes('a deal') || nextBtn.includes('stay in'));
+    if (userreviewLocation) {
+      utils.logsaved(passLog, `HM_TC_22-02`, `User review text should be display`)
+      utils.successLog(`HM_TC_22-02 : User review text should be display`);
+    } else {
+      utils.logsaved(errorLog, `HM_TC_22-02`, `User review text not display`)
+      utils.errorLog(`HM_TC_22-02 :${title}  User review text not display`);
+    }
+  } catch (error) {
+    console.log(`verifyDestinations`, error);
+  }
+}
+
+const faq = async (page, errorLog, passLog, testCast, title) => {
+  try {
+    const findHeading = await utils.findText(
+      page,
+      `//h4[contains(text(), '${title}')]`
+    );
+    if (findHeading) {
+      utils.logsaved(passLog, `${testCast}`, `${title} section visible`)
+      utils.successLog(`${testCast} :${title} section visible`);
+    } else {
+      utils.logsaved(errorLog, `${testCast}`, `${title} section visible`)
+      utils.errorLog(`${testCast} :${title} section not visible`);
+      return;
+    }
+    const textElementHandle = await page.waitForXPath(`//h4[contains(text(), '${title}')]`);
+    // Get the grandparent div's class name
+    const grandparentDivClassName = await page.evaluate((element) => {
+      const grandparentDiv = element.closest("div")?.parentNode;
+      // Return an object with class name and data from two child elements
+      if (grandparentDiv) {
+        const className = grandparentDiv.classList.value;
+        const link =
+          grandparentDiv.querySelector("a ")?.href;
+        const childData2 =
+          grandparentDiv.querySelector('.flex')?.innerText;
+        return { className, link, childData2 };
+      }
+      return null;
+    }, textElementHandle);
+    const faqQuestion = grandparentDivClassName.childData2.split('\n').filter((n) => n);
+    if (faqQuestion.length === 3) {
+      utils.logsaved(passLog, `${testCast}-01`, `A total 3 FAQs should display should displayed`)
+      utils.successLog(`${testCast}-01 :A total 3 FAQs should display should displayed`);
+    } else if (faqQuestion.length > 3) {
+      utils.logsaved(errorLog, `${testCast}-01`, `A total more then 3 FAQs not displayed`)
+      utils.errorLog(`${testCast}-01 :${title}  A total more then  3 FAQs not displayed`);
+    } else {
+      utils.logsaved(errorLog, `${testCast}-01`, `A total 3 FAQs not displayed`)
+      utils.errorLog(`${testCast}-01 :${title}  A total 3 FAQs not displayed`);
+    }
+    const tagName = 'details'
+    await page.waitForSelector(tagName);
+    const btn = await page.$(tagName);
+    if (btn) {
+      await btn.click()
+      const summary = await utils.getparentTOchildText(page, tagName, 'div');
+      if (summary.length === 3) {
+        utils.logsaved(passLog, `${testCast}-02`, `When the user clicks on the FAQs that section collapses and the FAQs detail display`)
+        utils.successLog(`${testCast}-02 :When the user clicks on the FAQs that section collapses and the FAQs detail display`);
+      } else {
+        utils.logsaved(errorLog, `${testCast}-02`, `When the user clicks on the FAQs that section collapses and the FAQs detail not display`)
+        utils.errorLog(`${testCast}-02 :${title}  When the user clicks on the FAQs that section collapses and the FAQs detail not display`);
+      }
+    }
+    if (grandparentDivClassName?.link) {
+      await page.goto(grandparentDivClassName?.link)
+      utils.logsaved(passLog, `${testCast}-03`, `Visit our FAQ page for more info hyperlink should display `)
+      utils.successLog(`${testCast}-03 :Visit our FAQ page for more info hyperlink should display`);
+      utils.logsaved(passLog, `HM_TC_24`, `When the user clicks on the "Visit our FAQ page for more info" FAQ page should open`)
+      utils.successLog(`HM_TC_24 :When the user clicks on the "Visit our FAQ page for more info" FAQ page should open`);
+    } else {
+      utils.logsaved(errorLog, `${testCast}-03`, `Visit our FAQ page for more info hyperlink not display `)
+      utils.errorLog(`${testCast}-03 :${title}  Visit our FAQ page for more info hyperlink not display `);
+      utils.logsaved(errorLog, `HM_TC_24`, `When the user clicks on the "Visit our FAQ page for more info" FAQ page should open`)
+      utils.errorLog(`HM_TC_24 :When the user clicks on the "Visit our FAQ page for more info" FAQ page should open`);
+    }
+
+  } catch (error) {
+    console.log(`verifyDestinations`, error);
   }
 }
 
@@ -814,18 +1167,37 @@ exports.homePage = async (page, errorLog = [], passLog = []) => {
   // await checkHeader(page, errorLog, passLog); // test-case-1
   // await page.goto("https://uat.whimstay.com/");
   await utils.sleep(2000);
-  await luxuryVacationRentals(page, errorLog, passLog,'HM_TC_13' , 'vacation rentals for groups', `stays for groups`);
+  await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_13', 'vacation rentals for groups', `stays for groups`);
   await propertyVerification(page, errorLog, passLog);
   await page.goto("https://uat.whimstay.com/");
   await utils.sleep(2000);
-  await luxuryVacationRentals(page, errorLog, passLog,'HM_TC_14' , 'vacation rentals with pools', `vacation rentals with pools`);
+  await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_14', 'vacation rentals with pools', `vacation rentals with pools`);
   await page.goto("https://uat.whimstay.com/");
   await utils.sleep(2000);
-  await luxuryVacationRentals(page, errorLog, passLog,'HM_TC_15' , ' pet friendly vacation rentals', `pet friendly vacation rentals`);
+  await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_15', 'pet friendly vacation rentals', `pet friendly vacation rentals`);
   await page.goto("https://uat.whimstay.com/");
   await utils.sleep(2000);
+  await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_16', 'vacation rentals with pools', `vacation rentals with pools`);
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(2000);
+  await popularDesitination(page, errorLog, passLog, 'HM_TC_17', 'Popular Destinations');
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(1000);
+  await verifyDestinations(page, errorLog, passLog, 'HM_TC_18', 'Trending beach destinations')
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(2000);
+  await verifyDestinations(page, errorLog, passLog, 'HM_TC_19', 'Trending mountain destinations')
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(2000);
+  await verifyDestinations(page, errorLog, passLog, 'HM_TC_20', 'Trending lake destinations')
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(2000);
+  await guestSaying(page, errorLog, passLog, 'HM_TC_21', 'What guests are saying');
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(1000);
+  await faq(page, errorLog, passLog, 'HM_TC_23', 'Common questions')
 
-  await verifySearchBar(page, errorLog, passLog);
+  await verifySearchBar(page, errorLog, passLog, 'HM_TC_15', ' pet friendly vacation rentals',);
   await checkElMonthCal(page, errorLog, passLog);
   await clearDate(page, errorLog, passLog);
   await checkElMonthCal(page, errorLog, passLog);
