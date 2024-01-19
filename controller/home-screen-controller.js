@@ -1302,16 +1302,16 @@ const closeSignUpmodel = async (page) => {
     console.log()
   }
 }
-exports.homePage = async (page, errorLog = [], passLog = []) => {
-  // const browser = await puppeteer.launch({
-  //   headless: false,
-  //   executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
-  // });
-  // const page = await browser.newPage();
-  // await page.goto("https://uat.whimstay.com/");
-  // await page.setViewport({ width: 1080, height: 864 });
-  // await checkHeader(page, errorLog, passLog); // test-case-1
-  // await page.goto("https://uat.whimstay.com/");
+exports.homePage = async (page = '', errorLog = [], passLog = []) => {
+  const browser = await puppeteer.launch({
+    headless: false,
+    executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  });
+  page = await browser.newPage();
+  await page.goto("https://uat.whimstay.com/");
+  await page.setViewport({ width: 1080, height: 864 });
+  await checkHeader(page, errorLog, passLog); // test-case-1
+  await page.goto("https://uat.whimstay.com/");
   await utils.sleep(2000);
   await closeSignUpmodel(page)
   await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_13', 'vacation rentals for groups', `stays for groups`);
@@ -1357,4 +1357,4 @@ exports.homePage = async (page, errorLog = [], passLog = []) => {
     passLog: passLog,
   };
 };
-// homePage();
+this.homePage();

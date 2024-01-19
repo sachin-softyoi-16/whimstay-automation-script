@@ -869,7 +869,7 @@ const runScript = async () => {
     await page.waitForTimeout(1000); // Wait for some time to ensure the page is loaded
     await page.setViewport({ width: 1536, height: 864 });
     await sleep(2000);
-    await homePage(page, errorLog, passLog)
+    // await homePage(page, errorLog, passLog)
 
     await logInButtonVisible(page, errorLog, passLog); // test-case-1
     await checkLoginValidation(page, errorLog, passLog); // test-case-2
@@ -877,15 +877,15 @@ const runScript = async () => {
     await mobileNumberLength(page, errorLog, passLog);
     await mobileNumberValidT4(page, errorLog, passLog);
     await resetOtp(page, errorLog, passLog);
-    await sleep(2000);
+    await sleep(1000);
     await logOutFeature(page, errorLog, passLog);
-    await sleep(2000);
+    await sleep(1000);
     await logInButtonVisible(page, errorLog, passLog); //check text
     await checkLoginValidation(page, errorLog, passLog); // test-case-2
     await signUpflow22(page, errorLog, passLog);
-    await sleep(2000);
+    await sleep(1000);
     await logOutFeature(page, errorLog, passLog);
-    await sleep(2000);
+    await sleep(1000);
     console.log(
       `before signup`,
       `Test-case passed : ${passLog.length}`,
