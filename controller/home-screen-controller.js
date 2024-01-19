@@ -1311,8 +1311,8 @@ exports.homePage = async (page = '', errorLog = [], passLog = []) => {
   await page.goto("https://uat.whimstay.com/");
   await page.setViewport({ width: 1080, height: 864 });
   await checkHeader(page, errorLog, passLog); // test-case-1
-  await page.goto("https://uat.whimstay.com/");
   await utils.sleep(2000);
+  await page.goto("https://uat.whimstay.com/");
   await closeSignUpmodel(page)
   await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_13', 'vacation rentals for groups', `stays for groups`);
   await propertyVerification(page, errorLog, passLog);
