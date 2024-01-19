@@ -1,5 +1,38 @@
 // function for signup
 const client = require("./db");
+const fs = require('fs');
+const path = require('path');
+const os = require('node:os');
+exports.removeTempFiles = async () => {
+  console.log('Remove temp files function calling')
+  try {
+    const tempFolderPath = os.tmpdir();
+    if (fs.existsSync(tempFolderPath)) {
+      const tmpFiles = await fs.readdirSync(tempFolderPath);
+      for (let i = 0; i < tmpFiles.length; i++) {
+        const file = tmpFiles[i];
+        if (file.startsWith('puppeteer')){
+          const filePath = path.join(tempFolderPath, file);
+          //remove file
+          fs.unlink(filePath, err => {
+            if (err) {
+              console.error('Error removing file:', err);
+              // Handle the error gracefully
+            } else {
+              console.log('File removed:', filePath);
+            }
+          });
+        }
+      }
+    } else {
+      console.log(`folder not exist `)
+    }
+  } catch (error) {
+    console.log('Remove temp files ')
+    console.log(error)
+  }
+}
+
 // const myutils = require('./')
 exports.findText = async (page, text) => {
   try {
@@ -63,7 +96,7 @@ exports.checkButtonExist = async (page, xpathSelector) => {
   }
 };
 
-exports.getparentTOchildText = async(page, parentTagName, childTagName)=>{
+exports.getparentTOchildText = async (page, parentTagName, childTagName) => {
   const innerText = await page.evaluate((parentTagName, childTagName) => {
     const parentElements = Array.from(document.getElementsByTagName(parentTagName));
     const innerTextArray = parentElements.map(parent => {

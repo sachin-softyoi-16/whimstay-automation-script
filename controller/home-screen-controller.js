@@ -1156,6 +1156,87 @@ const faq = async (page, errorLog, passLog, testCast, title) => {
   }
 }
 
+const foodverification = async (page, errorLog, passLog, testCast, title = 'Footer') => {
+  try {
+    const isFooter = await utils.findText(
+      page,
+      `//footer`
+    );
+    if (isFooter) {
+      utils.logsaved(passLog, `${testCast}`, `${title} section visible`)
+      utils.successLog(`${testCast} :${title} section visible`);
+    } else {
+      utils.logsaved(errorLog, `${testCast}`, `${title} section visible`)
+      utils.errorLog(`${testCast} :${title} section not visible`);
+      return;
+    }
+    const textElementHandle = await page.waitForXPath(`//footer`);
+    // Get the grandparent div's class name
+    const grandparentDivClassName = await page.evaluate((element) => {
+      const grandparentDiv = element.closest("div")?.parentNode;
+      // Return an object with class name and data from two child elements
+      if (grandparentDiv) {
+        const className = grandparentDiv.classList.value;
+        const link =
+        // Array.from(grandparentDiv.getElementsByTagName('a'))
+          grandparentDiv.querySelector("a")?.href;
+        const childData2 =
+          grandparentDiv.querySelector('.css-1aea1dr ')?.innerText;
+          const child3txt =
+          grandparentDiv.querySelector('.mb-10 ')?.innerText;
+        return { className, link,childData2, child3txt };
+      }
+      return null;
+    }, textElementHandle);
+
+    const parentTagName = 'footer';
+    const imgTagName = 'a';
+    // Use page.evaluate to get image sources based on parent and image tag names
+    const imageSources = await page.evaluate((parentTagName, imgTagName) => {
+      const parentElements = Array.from(document.getElementsByTagName(parentTagName));
+      const imageSourcesArray = parentElements.map(parent => {
+        const imageElements = Array.from(parent.getElementsByTagName(imgTagName));
+        return imageElements.map(img => img.href);
+      });
+
+      return imageSourcesArray.flat();
+    }, parentTagName, imgTagName);
+    
+    const footerTxt = grandparentDivClassName.childData2.split('\n').filter((n) => n);
+    const aboutWhim = footerTxt.some((txt) => txt.includes('About Whimstay'));
+    const topDest = footerTxt.some((txt) => txt.includes('Top Whimstay Destinations'));
+    if (aboutWhim && topDest) {
+      utils.logsaved(passLog, `${testCast}-01`, `About Whimstay and Top Whimstay Destinations should be displayed in the footer.`)
+      utils.successLog(`${testCast}-01 : About Whimstay and Top Whimstay Destinations should be displayed in the footer.`)
+    } else {
+      utils.logsaved(errorLog, `${testCast}-01`, `About Whimstay and Top Whimstay Destinations not be displayed in the footer.`)
+      utils.errorLog(`${testCast}-01 : About Whimstay and Top Whimstay Destinations not be displayed in the footer.`);
+    }
+    const copyRighttxt = grandparentDivClassName.child3txt == `© 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc.`
+    
+    if(copyRighttxt) {
+      utils.logsaved(passLog, `${testCast}-06`, `© 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc. text should be display.`)
+      utils.successLog(`${testCast}-06 : © 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc. text should be display.`)
+    } else {
+      utils.logsaved(errorLog, `${testCast}-06`, `© 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc. not be displayed in the footer.`)
+      utils.errorLog(`${testCast}-06 : © 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc. not be displayed in the footer.`);
+    }
+    if(imageSources.length < 34){
+      utils.logsaved(errorLog, `${testCast}-3`, `Some link are missing in Footer section.`)
+      utils.errorLog(`${testCast}-3 : Some link are missing in Footer section.`)
+    }
+    for (let i = 0; i < imageSources.length; i++) {
+      const link = imageSources[i];
+      await page.goto(link);
+      await utils.sleep(1000);
+      utils.logsaved(passLog, `${testCast}-Link-${i}`, `Link -> ${link} working.`)
+      utils.successLog(`${testCast}-Link-${i} : Link -> ${link} working.`)
+    }
+
+  } catch (error) {
+    console.log(`foodverification`, error)
+  }
+}
 exports.homePage = async (page, errorLog = [], passLog = []) => {
   // const browser = await puppeteer.launch({
   //   headless: false,
@@ -1167,6 +1248,7 @@ exports.homePage = async (page, errorLog = [], passLog = []) => {
   // await checkHeader(page, errorLog, passLog); // test-case-1
   // await page.goto("https://uat.whimstay.com/");
   await utils.sleep(2000);
+  await foodverification(page, errorLog, passLog, 'HM_TC_13')
   await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_13', 'vacation rentals for groups', `stays for groups`);
   await propertyVerification(page, errorLog, passLog);
   await page.goto("https://uat.whimstay.com/");

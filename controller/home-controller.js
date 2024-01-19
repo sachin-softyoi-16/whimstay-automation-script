@@ -859,6 +859,7 @@ const runScript = async () => {
   let page;
   // let browser;
   try {
+    // await utils.removeTempFiles();
     const browser = await puppeteer.launch({
       headless: false,
       executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
