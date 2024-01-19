@@ -1047,7 +1047,6 @@ const guestSaying = async (page, errorLog, passLog, testCast, title) => {
     }, textElementHandle);
     const sliderValue = grandparentDivClassName.childData2.split('\n').filter((n) => n);
     const totalStart = grandparentDivClassName.childres.split('</svg>').filter((n) => n);
-    console.log(grandparentDivClassName)
     const nextbtn = sliderValue.some((nextBtn) => nextBtn == ' Next');
     const previous = sliderValue.some((nextBtn) => nextBtn == ' Previous');
     if (sliderValue.length >= 24) {
@@ -1178,13 +1177,13 @@ const foodverification = async (page, errorLog, passLog, testCast, title = 'Foot
       if (grandparentDiv) {
         const className = grandparentDiv.classList.value;
         const link =
-        // Array.from(grandparentDiv.getElementsByTagName('a'))
+          // Array.from(grandparentDiv.getElementsByTagName('a'))
           grandparentDiv.querySelector("a")?.href;
         const childData2 =
-          grandparentDiv.querySelector('.css-1aea1dr ')?.innerText;
-          const child3txt =
+          grandparentDiv.querySelector('footer')?.innerText;
+        const child3txt =
           grandparentDiv.querySelector('.mb-10 ')?.innerText;
-        return { className, link,childData2, child3txt };
+        return { className, link, childData2, child3txt };
       }
       return null;
     }, textElementHandle);
@@ -1201,7 +1200,7 @@ const foodverification = async (page, errorLog, passLog, testCast, title = 'Foot
 
       return imageSourcesArray.flat();
     }, parentTagName, imgTagName);
-    
+
     const footerTxt = grandparentDivClassName.childData2.split('\n').filter((n) => n);
     const aboutWhim = footerTxt.some((txt) => txt.includes('About Whimstay'));
     const topDest = footerTxt.some((txt) => txt.includes('Top Whimstay Destinations'));
@@ -1213,15 +1212,49 @@ const foodverification = async (page, errorLog, passLog, testCast, title = 'Foot
       utils.errorLog(`${testCast}-01 : About Whimstay and Top Whimstay Destinations not be displayed in the footer.`);
     }
     const copyRighttxt = grandparentDivClassName.child3txt == `© 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc.`
-    
-    if(copyRighttxt) {
+
+    if (copyRighttxt) {
       utils.logsaved(passLog, `${testCast}-06`, `© 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc. text should be display.`)
       utils.successLog(`${testCast}-06 : © 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc. text should be display.`)
     } else {
       utils.logsaved(errorLog, `${testCast}-06`, `© 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc. not be displayed in the footer.`)
       utils.errorLog(`${testCast}-06 : © 2023 Whimstay, Inc. All Rights Reserved. “SEIZE THE STAY” and “WHIMSTAY” are registered trademarks of Whimstay, Inc. and the W Logo is a trademark of Whimstay, Inc. not be displayed in the footer.`);
     }
-    if(imageSources.length < 34){
+    if (footerTxt.some((txt) => txt.includes('Top Whimstay Destinations'))) {
+      utils.logsaved(passLog, `${testCast}-05`, `"Get the best deals on last-minute vacation rentals" text should be displayed under the whimstay logo`)
+      utils.successLog(`${testCast}-05 : "Get the best deals on last-minute vacation rentals" text should be displayed under the whimstay logo`)
+    } else {
+      utils.logsaved(errorLog, `${testCast}-05`, `"Get the best deals on last-minute vacation rentals" text should be displayed under the whimstay logo not be displayed in the footer.`)
+      utils.errorLog(`${testCast}-05 : "Get the best deals on last-minute vacation rentals" text should be displayed under the whimstay logo not be displayed in the footer.`);
+    }
+
+    if (footerTxt.some((txt) => txt.includes('Privacy')) && footerTxt.some((txt) => txt.includes('Terms')) && footerTxt.some((txt) => txt.includes('Sitemap'))) {
+      utils.logsaved(passLog, `${testCast}-03`, `Privacy, Terms, and sitemap should be displayed on the right side of the corner should be displayed.`)
+      utils.successLog(`${testCast}-03 : Privacy, Terms, and sitemap should be displayed on the right side of the corner should be displayed.`)
+    } else {
+      utils.logsaved(errorLog, `${testCast}-03`, `Privacy, Terms, and sitemap should be displayed on the right side of the corner not display.`)
+      utils.errorLog(`${testCast}-03 : Privacy, Terms, and sitemap should be displayed on the right side of the corner not display.`);
+    }
+
+    const usdEnglish = footerTxt.some((txt) => txt.trim().includes('USD')) && footerTxt.some((txt) => txt.trim().includes('English(US)'));
+
+    if (usdEnglish) {
+      utils.logsaved(passLog, `${testCast}-04`, `USD and English(US) text should display`)
+      utils.successLog(`${testCast}-04 : USD and English(US) text should display`)
+    } else {
+      utils.logsaved(errorLog, `${testCast}-04`, `USD and English(US) text not be displayed in the footer.`)
+      utils.errorLog(`${testCast}-04 : USD and English(US) text not be displayed in the footer.`);
+    }
+
+    if (footerTxt.some((txt) => txt.includes('Find the best deals')) && footerTxt.some((txt) => txt.includes('on last-minute vacation rentals'))) {
+      utils.logsaved(passLog, `${testCast}-05`, `"Find the best deals on last-minute vacation rentals" text should be displayed under the whimstay logo`)
+      utils.successLog(`${testCast}-05 : "Find the best deals on last-minute vacation rentals" text should be displayed under the whimstay logo`)
+    } else {
+      utils.logsaved(errorLog, `${testCast}-05`, `"Find the best deals on last-minute vacation rentals" text should be displayed under the whimstay logo not be displayed in the footer.`)
+      utils.errorLog(`${testCast}-05 : "Find the best deals on last-minute vacation rentals" text should be displayed under the whimstay logo not be displayed in the footer.`);
+    }
+
+    if (imageSources.length < 34) {
       utils.logsaved(errorLog, `${testCast}-3`, `Some link are missing in Footer section.`)
       utils.errorLog(`${testCast}-3 : Some link are missing in Footer section.`)
     }
@@ -1237,6 +1270,38 @@ const foodverification = async (page, errorLog, passLog, testCast, title = 'Foot
     console.log(`foodverification`, error)
   }
 }
+
+const closeSignUpmodel = async (page) => {
+  try {
+    const formtext = await page.$$eval(`div > *`, (childElements) => {
+      return childElements.map((childElement) => {
+        return {
+          name: childElement.tagName.toLowerCase(),
+          value: childElement.innerText,
+        };
+      });
+    });
+    const isForm = formtext.some((obj) => obj.value == `Want an extra $25 off?`);
+    if (isForm) {
+      // const isModelOpen = await utils.findText(
+      //   page,
+      //   `//h1[contains(text(), 'Find the best deals on last-minute vacation rentals')]`
+      // );
+      const xpath11 = `//button[@aria-label='Close']`;
+      await page.waitForXPath(xpath11);
+      const [adultBtn] = await page.$x(xpath11);
+      if (adultBtn) {
+        await adultBtn.click();
+      }
+      // if (isModelOpen) {
+      //   await isModelOpen.click()
+      // }
+    }
+
+  } catch (error) {
+    console.log()
+  }
+}
 exports.homePage = async (page, errorLog = [], passLog = []) => {
   // const browser = await puppeteer.launch({
   //   headless: false,
@@ -1248,36 +1313,37 @@ exports.homePage = async (page, errorLog = [], passLog = []) => {
   // await checkHeader(page, errorLog, passLog); // test-case-1
   // await page.goto("https://uat.whimstay.com/");
   await utils.sleep(2000);
-  await foodverification(page, errorLog, passLog, 'HM_TC_13')
+  await closeSignUpmodel(page)
   await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_13', 'vacation rentals for groups', `stays for groups`);
   await propertyVerification(page, errorLog, passLog);
   await page.goto("https://uat.whimstay.com/");
-  await utils.sleep(2000);
+  await utils.sleep(1000);
   await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_14', 'vacation rentals with pools', `vacation rentals with pools`);
   await page.goto("https://uat.whimstay.com/");
-  await utils.sleep(2000);
+  await utils.sleep(1000);
   await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_15', 'pet friendly vacation rentals', `pet friendly vacation rentals`);
   await page.goto("https://uat.whimstay.com/");
-  await utils.sleep(2000);
+  await utils.sleep(1000);
   await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_16', 'vacation rentals with pools', `vacation rentals with pools`);
   await page.goto("https://uat.whimstay.com/");
-  await utils.sleep(2000);
+  await utils.sleep(1000);
   await popularDesitination(page, errorLog, passLog, 'HM_TC_17', 'Popular Destinations');
   await page.goto("https://uat.whimstay.com/");
   await utils.sleep(1000);
   await verifyDestinations(page, errorLog, passLog, 'HM_TC_18', 'Trending beach destinations')
   await page.goto("https://uat.whimstay.com/");
-  await utils.sleep(2000);
+  await utils.sleep(1000);
   await verifyDestinations(page, errorLog, passLog, 'HM_TC_19', 'Trending mountain destinations')
   await page.goto("https://uat.whimstay.com/");
-  await utils.sleep(2000);
+  await utils.sleep(1000);
   await verifyDestinations(page, errorLog, passLog, 'HM_TC_20', 'Trending lake destinations')
   await page.goto("https://uat.whimstay.com/");
-  await utils.sleep(2000);
+  await utils.sleep(1000);
   await guestSaying(page, errorLog, passLog, 'HM_TC_21', 'What guests are saying');
   await page.goto("https://uat.whimstay.com/");
   await utils.sleep(1000);
-  await faq(page, errorLog, passLog, 'HM_TC_23', 'Common questions')
+  await faq(page, errorLog, passLog, 'HM_TC_23', 'Common questions') // 23,24
+  await foodverification(page, errorLog, passLog, 'HM_TC_25'); // homw page completed
 
   await verifySearchBar(page, errorLog, passLog, 'HM_TC_15', ' pet friendly vacation rentals',);
   await checkElMonthCal(page, errorLog, passLog);
