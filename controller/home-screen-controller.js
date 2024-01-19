@@ -1309,7 +1309,8 @@ exports.homePage = async (page = '', errorLog = [], passLog = []) => {
   });
   page = await browser.newPage();
   await page.goto("https://uat.whimstay.com/");
-  await page.setViewport({ width: 1080, height: 864 });
+  await page.waitForTimeout(1000); // Wait for some time to ensure the page is loaded
+  await page.setViewport({ width: 1536, height: 864 });
   await checkHeader(page, errorLog, passLog); // test-case-1
   await utils.sleep(2000);
   await page.goto("https://uat.whimstay.com/");
@@ -1343,6 +1344,9 @@ exports.homePage = async (page = '', errorLog = [], passLog = []) => {
   await page.goto("https://uat.whimstay.com/");
   await utils.sleep(1000);
   await faq(page, errorLog, passLog, 'HM_TC_23', 'Common questions') // 23,24
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(1000);
+
   await foodverification(page, errorLog, passLog, 'HM_TC_25'); // homw page completed
 
   await verifySearchBar(page, errorLog, passLog, 'HM_TC_15', ' pet friendly vacation rentals',);
