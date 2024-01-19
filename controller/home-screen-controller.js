@@ -1346,8 +1346,9 @@ exports.homePage = async (page = '', errorLog = [], passLog = []) => {
   await faq(page, errorLog, passLog, 'HM_TC_23', 'Common questions') // 23,24
   await page.goto("https://uat.whimstay.com/");
   await utils.sleep(1000);
-
   await foodverification(page, errorLog, passLog, 'HM_TC_25'); // homw page completed
+  await page.goto("https://uat.whimstay.com/");
+  await utils.sleep(1000);
 
   await verifySearchBar(page, errorLog, passLog, 'HM_TC_15', ' pet friendly vacation rentals',);
   await checkElMonthCal(page, errorLog, passLog);
