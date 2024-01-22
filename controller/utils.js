@@ -11,7 +11,7 @@ exports.removeTempFiles = async () => {
       const tmpFiles = await fs.readdirSync(tempFolderPath);
       for (let i = 0; i < tmpFiles.length; i++) {
         const file = tmpFiles[i];
-        if (file.startsWith('puppeteer')){
+        if (file.startsWith('puppeteer')) {
           const filePath = path.join(tempFolderPath, file);
           //remove file
           fs.unlink(filePath, err => {
@@ -44,6 +44,30 @@ exports.findText = async (page, text) => {
     console.log(error);
   }
 };
+exports.getTextFromTag = async (page, tagSelector) => {
+  try {
+    await page.waitForSelector(tagSelector);
+    const innerText = await page.$eval(tagSelector, (element) => {
+      return element.textContent;
+    });
+    return innerText;
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+exports.getTextFromTag1 = async (page, tagSelector) => {
+  try {
+    await page.waitForXPath(tagSelector);
+    const innerText = await page.$x(tagSelector, (element) => {
+      return element.textContent;
+    });
+    return innerText;
+  } catch (err) {
+    console.log(err)
+  }
+}
+
 exports.checkButtonvisibilty = async (page, buttonText) => {
   try {
     const xpath = `//button[contains(text(), '${buttonText}')]`;
@@ -261,4 +285,78 @@ exports.getParentToChildrens = async (page, xpathExpression, nameofClass) => {
     return null;
   }, textElementHandle);
   return grandparentDivClassName;
+}
+let intervalId;
+exports.closeSignUpmodel = async (page) => {
+  try {
+    console.log('model detector')
+    const findHeading = await this.findText(
+      page,
+      `//div[contains(text(), 'Want an extra $25 off?')]`
+    );
+    // const formtext = await page.$$eval(`form > *`, (childElements) => {
+    //   return childElements.map((childElement) => {
+    //     return {
+    //       name: childElement.tagName.toLowerCase(),
+    //       value: childElement.innerText,
+    //     };
+    //   });
+    // });
+    // const isForm = formtext.some((obj) => obj.value == `sign up and get a $25 promo code`);
+    if (findHeading) {
+      const xpath11 = `//button[@aria-label='Close']`;
+      await page.waitForXPath(xpath11);
+      const [adultBtn] = await page.$x(xpath11);
+      if (adultBtn) {
+        await adultBtn.click();
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
+    console.log(error)
+  }
+}
+exports.removeFunction = async (page) => {
+  let isOpen = await this.closeSignUpmodel(page);
+  if (!isOpen) {
+    isOpen = this.removeFunction(page);
+  }
+}
+
+function stopInterval() {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+    console.log("Interval stopped.");
+  } else {
+    console.log("No interval is currently running.");
+  }
+}
+
+exports.getImageVisibility = async (page) => {
+  try {
+    const isImageVisible = await page.evaluate(() => {
+      const image = document.querySelector('img'); // Replace with your image selector
+      if (image) {
+        const rect = image.getBoundingClientRect();
+        return (
+          rect.width > 0 &&
+          rect.height > 0 &&
+          rect.top >= 0 &&
+          rect.left >= 0 &&
+          rect.bottom <= window.innerHeight &&
+          rect.right <= window.innerWidth
+        );
+      }
+      return false;
+    });
+    return isImageVisible;
+  } catch (error) {
+    console.log(error, 'image not visible')
+  }
 }

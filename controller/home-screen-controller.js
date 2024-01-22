@@ -344,7 +344,7 @@ const AddGuest = async (page, errorLog, passLog) => {
     utils.errorLog(
       `HM_TC_06:  The below Fields should be displayed on the add guest popup. ${notExistMenu.toString()} `
     );
-    errorlog.push({
+    errorLog.push({
       case_id: "HM_TC_06",
       message: `The below Fields should be displayed on the add guest popup. ${notExistMenu.toString()} `,
     });
@@ -415,7 +415,6 @@ const featureDeal = async (page, errorLog, passLog) => {
   }
   try {
     await page.waitForSelector(`.slick-active  > div > img`, { visible: true });
-    console.log("The image is visible.");
     passLog.push({
       case_id: "HM_TC_12-02",
       message: `Property image.`,
@@ -1302,19 +1301,33 @@ const closeSignUpmodel = async (page) => {
     console.log()
   }
 }
+exports.searchProperty = async (page, errorLog, passLog) => {
+  try {
+    await verifySearchBar(page, errorLog, passLog, 'HM_TC_15', ' pet friendly vacation rentals',);
+    await checkElMonthCal(page, errorLog, passLog);
+    await clearDate(page, errorLog, passLog);
+    await checkElMonthCal(page, errorLog, passLog);
+    await featureDeal(page, errorLog, passLog);
+    // search functionality
+    await AddGuest(page, errorLog, passLog);
+  } catch (error) {
+    console.log(error)
+  }
+}
 exports.homePage = async (page = '', errorLog = [], passLog = []) => {
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
   });
   page = await browser.newPage();
   await page.goto("https://uat.whimstay.com/");
   await page.waitForTimeout(1000); // Wait for some time to ensure the page is loaded
   await page.setViewport({ width: 1536, height: 864 });
+  await utils.removeFunction(page);
   await checkHeader(page, errorLog, passLog); // test-case-1
   await utils.sleep(2000);
   await page.goto("https://uat.whimstay.com/");
-  await closeSignUpmodel(page)
+  // await closeSignUpmodel(page)
   await luxuryVacationRentals(page, errorLog, passLog, 'HM_TC_13', 'vacation rentals for groups', `stays for groups`);
   await propertyVerification(page, errorLog, passLog);
   await page.goto("https://uat.whimstay.com/");
@@ -1350,16 +1363,10 @@ exports.homePage = async (page = '', errorLog = [], passLog = []) => {
   await page.goto("https://uat.whimstay.com/");
   await utils.sleep(1000);
 
-  await verifySearchBar(page, errorLog, passLog, 'HM_TC_15', ' pet friendly vacation rentals',);
-  await checkElMonthCal(page, errorLog, passLog);
-  await clearDate(page, errorLog, passLog);
-  await checkElMonthCal(page, errorLog, passLog);
-  await featureDeal(page, errorLog, passLog);
-  // search functionality
-  await AddGuest(page, errorLog, passLog);
+  this.searchProperty(page, errorLog, passLog)
   return {
     errorLog: errorLog,
     passLog: passLog,
   };
 };
-this.homePage();
+// this.homePage();
