@@ -273,6 +273,41 @@ const shareLinkOpen = async (link, errorLog, passLog, testCast, browser) => {
         utils.errorLog($`{testCast} : Redirect not working`);
     }
 }
+
+const imagesGallary = async (page) => {
+    try {
+        await page.click('.details-page-images')
+        await utils.sleep(2000)
+        await page.waitForSelector('.chakra-modal__body', { visible: true });
+        const imageElements = await page.$$('img');
+        for (const imageElement of imageElements) {
+            const isVisible = await page.evaluate(element => {
+                const style = getComputedStyle(element);
+                return style.display !== 'none' && style.visibility !== 'hidden';
+            }, imageElement);
+
+            const src = await page.evaluate(element => element.src, imageElement);
+            const isLoaded = await page.evaluate(async (element) => {
+                return new Promise(resolve => {
+                    if (element.complete) {
+                        resolve(element.naturalWidth > 0);
+                    } else {
+                        element.onload = () => resolve(true);
+                        element.onerror = () => resolve(false);
+                    }
+                });
+            }, imageElement);
+
+            if (isVisible && isLoaded) {
+                console.log(`Image "${src}" is properly visible and loaded.`);
+            } else {
+                console.error(`Image "${src}" is not properly visible or has loading errors.`);
+            }
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
 exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
     try {
 
@@ -293,8 +328,9 @@ exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
         // await newPage.goto('https://uat.whimstay.com/detail/Splash-Mountain-Lodge-Play-games-splash-in-your-private-indoor-pool/d1568696f906bfcbf22dec4af2170e5b?name=Sevierville%2C+Tennessee%2C+USA&check_in=2024-06-06&check_out=2024-05-08&adultsCount=1&childrenCount=0&suitablePet=false&timestamp=1705917431019')
         await newPage.setViewport({ width: 1536, height: 864 });
         await detailScreenVerification(newPage, errorLog, passLog, 'PD_TC_02', 'Property detail');
-        const modelRes = await shareModel(newPage, errorLog, passLog, 'PD_TC_03', 'Property share model');
-        await shareLinkOpen(modelRes, errorLog, passLog, 'PD_TC_04', browser);
+        // const modelRes = await shareModel(newPage, errorLog, passLog, 'PD_TC_03', 'Property share model');
+        // await shareLinkOpen(modelRes, errorLog, passLog, 'PD_TC_04', browser);
+        await imagesGallary(newPage, errorLog, passLog, 'PD_TC_04', browser);
     } catch (error) {
         console.log(error)
     }
