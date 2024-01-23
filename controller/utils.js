@@ -37,7 +37,7 @@ exports.removeTempFiles = async () => {
 exports.findText = async (page, text) => {
   try {
     // const xpath = `//button[contains(text(), '${buttonText}')]`;
-    await page.waitForXPath(text, { visible: true });
+    await page.waitForXPath(text);
     const [button] = await page.$x(text);
     return button;
   } catch (error) {
@@ -363,10 +363,9 @@ exports.getImageVisibility = async (page) => {
 
 exports.checkImagesLoad = async (page, classname) => {
   const parentClass = classname;
-  // const imgTagName = 'img';
   // Use page.evaluate to get image sources based on parent and image tag names
   const imageUrls = await page.evaluate((parentClass) => {
-    const parentElement = document.querySelector(`.${parentClass}`);
+    const parentElement = document.querySelector(`${parentClass}`);
     if (!parentElement) {
       return []; // Return an empty array if the parent class is not found
     }
@@ -374,21 +373,22 @@ exports.checkImagesLoad = async (page, classname) => {
     const urls = Array.from(imageElements).map(img => img.src);
     return urls;
   }, parentClass);
-  const loadedImages = [];
+  
+  let loadedImages = [];
   for (const imageUrl of imageUrls) {
-      const isLoaded = await page.evaluate(async (url) => {
-          return new Promise(resolve => {
-              const img = new Image();
-              img.onload = () => resolve(true);
-              img.onerror = () => resolve(false);
-              img.src = url;
-          });
-      }, imageUrl);
+    const isLoaded = await page.evaluate(async (url) => {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    }, imageUrl);
 
-      if (isLoaded) {
-          loadedImages.push(imageUrl);
-      }
+    if (isLoaded) {
+      loadedImages = [...loadedImages, imageUrl]//.push(imageUrl);
+    }
   }
-  return { totalImage: imageUrls, loadedImages :  loadedImages}
+  return { totalImage: imageUrls, loadedImages: loadedImages }
 
 }
