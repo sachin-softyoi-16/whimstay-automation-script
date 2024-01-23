@@ -216,6 +216,13 @@ const detailScreenVerification = async (page, errorLog, passLog, testCast, title
 }
 const shareModel = async (page, errorLog, passLog, testCast, title) => {
     try {
+        const closeDateModel = await utils.findText(
+            page,
+            `//button[contains(text(), 'Choose other dates')]`
+        );
+        if (closeDateModel) {
+            await closeDateModel.click();
+        }
         const xpath11 = `//button[@aria-label='share property']`;
         await page.waitForXPath(xpath11);
         const [shareBtn] = await page.$x(xpath11);
@@ -259,50 +266,61 @@ const shareModel = async (page, errorLog, passLog, testCast, title) => {
 }
 const shareLinkOpen = async (link, errorLog, passLog, testCast, browser) => {
     try {
-        const newPage = await browser.newPage();
-        await newPage.goto(link);
-        await newPage.setViewport({ width: 1536, height: 864 });
-        utils.logsaved(passLog, `${testCast}`, `Redirect to property detail page`)
-        utils.successLog(`${testCast} : Redirect to property detail page`);
-        await utils.sleep(2000);
-        await newPage.close();
-
+        if (link) {
+            const newPage = await browser.newPage();
+            await newPage.goto(link);
+            await newPage.setViewport({ width: 1536, height: 864 });
+            utils.logsaved(passLog, `${testCast}`, `Redirect to property detail page`)
+            utils.successLog(`${testCast} : Redirect to property detail page`);
+            await utils.sleep(2000);
+            await newPage.close();
+        } else {
+            utils.logsaved(errorLog, `${testCast}`, `Redirect not working`)
+            utils.errorLog($`{testCast} : Redirect not working`);
+        }
     } catch (error) {
         console.log(error)
-        utils.logsaved(error, `${testCast}`, `Redirect not working`)
+        utils.logsaved(errorLog, `${testCast}`, `Redirect not working`)
         utils.errorLog($`{testCast} : Redirect not working`);
     }
 }
 
-const imagesGallary = async (page) => {
+const imagesGallary = async (page, errorLog, passLog, testCast) => {
     try {
-        await page.click('.details-page-images')
+        const findHeading = await utils.findText(
+            page,
+            `//button[@aria-label='Close']`
+        );
+        if (findHeading) {
+            await findHeading.click();
+        }
+
+
         await utils.sleep(2000)
-        await page.waitForSelector('.chakra-modal__body', { visible: true });
+        await page.click('.details-page-images')
+        // await page.waitForSelector('.chakra-modal__body', { visible: true });
+
         const imageElements = await page.$$('img');
-        for (const imageElement of imageElements) {
-            const isVisible = await page.evaluate(element => {
-                const style = getComputedStyle(element);
-                return style.display !== 'none' && style.visibility !== 'hidden';
-            }, imageElement);
 
-            const src = await page.evaluate(element => element.src, imageElement);
-            const isLoaded = await page.evaluate(async (element) => {
-                return new Promise(resolve => {
-                    if (element.complete) {
-                        resolve(element.naturalWidth > 0);
-                    } else {
-                        element.onload = () => resolve(true);
-                        element.onerror = () => resolve(false);
-                    }
-                });
-            }, imageElement);
+        const textElementHandle = await page.waitForSelector('.chakra-modal__body', { visible: true });
 
-            if (isVisible && isLoaded) {
-                console.log(`Image "${src}" is properly visible and loaded.`);
-            } else {
-                console.error(`Image "${src}" is not properly visible or has loading errors.`);
-            }
+        const parentClass = 'chakra-modal__body';
+        const imgTagName = 'img';
+        const imageRes = await utils.checkImagesLoad(page, parentClass);
+        if (imageRes.loadedImages.length === imageRes.totalImage.length) {
+            utils.logsaved(passLog, `${testCast}`, `Image should be displayed properly in gallery.`)
+            utils.successLog(`${testCast} : Image should be displayed properly in gallery.`);
+        } else {
+            const notDisplyFromModel = imageUrls.filter((img) => loadedImages.find((img2) => img != img2))
+            utils.logsaved(errorLog, `${testCast}`, `In gallery some image's are not displayed.`)
+            utils.errorLog(`${testCast} :In gallery some image's are not displayed. list ${notDisplyFromModel.toString()}`);
+        }
+        const galleryModelClose = await utils.findText(
+            page,
+            `//button[@aria-label='Close-button']`
+        );
+        if (galleryModelClose) {
+            await galleryModelClose.click();
         }
     } catch (error) {
         console.log(error)
@@ -328,9 +346,11 @@ exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
         // await newPage.goto('https://uat.whimstay.com/detail/Splash-Mountain-Lodge-Play-games-splash-in-your-private-indoor-pool/d1568696f906bfcbf22dec4af2170e5b?name=Sevierville%2C+Tennessee%2C+USA&check_in=2024-06-06&check_out=2024-05-08&adultsCount=1&childrenCount=0&suitablePet=false&timestamp=1705917431019')
         await newPage.setViewport({ width: 1536, height: 864 });
         await detailScreenVerification(newPage, errorLog, passLog, 'PD_TC_02', 'Property detail');
-        // const modelRes = await shareModel(newPage, errorLog, passLog, 'PD_TC_03', 'Property share model');
-        // await shareLinkOpen(modelRes, errorLog, passLog, 'PD_TC_04', browser);
-        await imagesGallary(newPage, errorLog, passLog, 'PD_TC_04', browser);
+        const modelRes = await shareModel(newPage, errorLog, passLog, 'PD_TC_03', 'Property share model');
+        await shareLinkOpen(modelRes, errorLog, passLog, 'PD_TC_04', browser);
+        await utils.sleep(2000)
+        await imagesGallary(newPage, errorLog, passLog, 'PD_TC_05', 'Image Gallary');
+       
     } catch (error) {
         console.log(error)
     }
