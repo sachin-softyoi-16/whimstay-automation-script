@@ -180,9 +180,15 @@ const detailScreenVerification = async (page, errorLog, passLog, testCast, title
         if (isMapVisible) {
             utils.logsaved(passLog, `${testCast}-02-10`, `The map is visible`)
             utils.successLog(`${testCast}-02-10 : The map is visible`);
+
+            utils.logsaved(passLog, `PD_TC_10`, `Map should be display proper and Property location should be display in Map.`)
+            utils.successLog(`PD_TC_10 : Map should be display proper and Property location should be display in Map.`);
         } else {
             utils.logsaved(errorLog, `${testCast}-02-10`, `The map not visible`)
             utils.errorLog(`${testCast}-02-10 : The map not visible`);
+
+            utils.logsaved(errorLog, `PD_TC_10`, `Map should be display proper and Property location should be display in Map.`)
+            utils.errorLog(`PD_TC_10 : Map should be display proper and Property location should be display in Map.`);
         }
 
 
@@ -480,6 +486,336 @@ const verifyAnmimities = async (page, errorLog, passLog, testCast, title) => {
         utils.errorLog(`${testCast} : ${title} section is not available`);
     }
 }
+const nearbyDestinations = async (page, errorLog, passLog, testCast, title) => {
+    try {
+        const destinations = await utils.findText(
+            page,
+            `//h3[contains(text(), 'Explore nearby destinations')]`
+        );
+        if (destinations) {
+            const textElementHandle = await page.waitForXPath(`//h3[contains(text(), 'Explore nearby destinations')]`);
+            // Get the grandparent div's class name
+            const grandparentDivClassName = await page.evaluate((element) => {
+                const grandparentDiv = element.closest("div")?.parentNode;
+                // Return an object with class name and data from two child elements
+                if (grandparentDiv) {
+                    const className = grandparentDiv.classList.value;
+                    const aTagelements = document.querySelectorAll(`.grid-cols-1 a`);
+                    const link = Array.from(aTagelements, element => element.getAttribute('href'));
+                    const childData2 =
+                        grandparentDiv.querySelector('.grid-cols-1')?.innerText;
+                    return { className, link, childData2 };
+                }
+                return null;
+            }, textElementHandle);
+
+            const destinationsList = grandparentDivClassName.childData2.split('\n').filter((n) => n);
+            if (destinationsList.length === 10 && grandparentDivClassName.link.length === 10) {
+                utils.logsaved(passLog, `${testCast}-01`, `The nearby city's link should be visible and clickable (Max 10 links)`)
+                utils.successLog(`${testCast}-01 :The nearby city's link should be visible and clickable (Max 10 links)`);
+            } else {
+                utils.logsaved(errorLog, `${testCast}-01`, `The nearby city's link not visible and clickable (Max 10 links)`)
+                utils.errorLog(`${testCast}-01 :${title}  The nearby city's link not visible and clickable (Max 10 links)`);
+            }
+            const isDuplicate = utils.findDuplicates(grandparentDivClassName.link)
+            if (isDuplicate.length > 0) {
+                utils.logsaved(errorLog, `${testCast}-02`, `Duplicate destination should be  display ${isDuplicate.toString()}`)
+                utils.errorLog(errorLog, `${testCast}-02 : Duplicate destination should be  display ${isDuplicate.toString()}`)
+            } else {
+                utils.logsaved(passLog, `${testCast}-02`, `Duplicate destination should not display`)
+                utils.successLog(`${testCast}-02 : Duplicate destination should not display`);
+            }
+
+            // for (let index = 0; index < grandparentDivClassName.link.length; index++) {
+            //     const link = grandparentDivClassName.link[index];
+            //     await page.goto(`${process.env.DOMAIN_URL}${link}`);
+            //     await page.waitForTimeout(2000);
+            //     utils.logsaved(passLog, `PD_TC_13-Link-${index}`, `Redirect to ${link}`)
+            //     utils.successLog(`PD_TC_13-Link-${index} : Redirect to ${link}`);
+            // }
+        } else {
+            utils.logsaved(errorLog, `${testCast}-03`, `${title} section not display.`)
+            utils.errorLog(`${testCast}-03 :${title} section not display.`);
+            return;
+        }
+    } catch (error) {
+        console.log(`error => Google map not work `, error)
+    }
+}
+
+const priceSelection = async (page, errorLog, passLog, testCast, title) => {
+    try {
+        return new Promise(async (resolve) => {
+            await page.goto(`${process.env.TEST_BOOKING_PROPERTY}`);
+            await page.waitForTimeout(1000);
+
+            const oldPricetextElementHandle = await page.waitForXPath(`//p[contains(text(), 'Save')]`);
+
+            const oldPricegrandparentDivClassName = await page.evaluate((element) => {
+                const grandparentDiv = element.closest("div")?.parentNode;
+                // Return an object with class name and data from two child elements
+                if (grandparentDiv) {
+                    const className = grandparentDiv.classList.value;
+                    const link =
+                        grandparentDiv.querySelector("a ")?.href;
+                    const childData2 =
+                        grandparentDiv.querySelector('.flex')?.innerText;
+                    return { className, link, childData2 };
+                }
+                return null;
+            }, oldPricetextElementHandle);
+
+            const findHeading = await utils.findText(
+                page,
+                `//button[contains(text(), 'Choose Dates')]`
+            );
+            if (findHeading) {
+                await findHeading.click();
+                await utils.sleep(1000);
+
+                // const textElementHandle = await page.waitForXPath(`//button[@aria-controls="headlessui-popover-panel-:rr:"]`);
+                const textElementHandle = await page.waitForSelector(`#calendarTrigger`);
+                // Get the grandparent div's class name
+                const grandparentDivClassName = await page.evaluate((element) => {
+                    const grandparentDiv = element.closest("div")?.parentNode;
+                    // Return an object with class name and data from three child elements
+                    if (grandparentDiv) {
+                        const className = grandparentDiv.classList.value;
+                        const childData2 = grandparentDiv.querySelector('.calendar_btn')?.innerText;
+                        const aTagelements = document.querySelectorAll(`.calendar_btn`);
+                        const dates = Array.from(aTagelements, element => {
+                            return {
+                                className: element.getAttribute('class'), value: element.innerText.trim(), disable:
+                                    element.disabled, id: element.getAttribute('id')
+                            }
+                        });
+                        return { className, dates, childData2 };
+                    }
+                    return null;
+                }, textElementHandle);
+                const availableDates = grandparentDivClassName.dates.filter((obj) => !obj.className.includes('calendar_btn_not_available  '))
+                // const checkoutSDate = grandparentDivClassName.dates.filter((obj) => !obj.className.includes('calendar_btn_not_available  '))
+                const datesLength = Math.floor((Math.random() * availableDates.length) + 1)
+                const checkIn = availableDates[datesLength]
+                const checkOut = availableDates[datesLength + 1]
+                await page.waitForSelector(`#${checkIn.id}`);
+                await page.click(`#${checkIn.id}`);
+                await page.waitForTimeout(1000); // Wait for some time to ensure the page is loaded
+                await page.click(`#${checkOut.id}`);
+                await utils.sleep(1000);
+                const textElementHandleOfPrice = await page.waitForXPath(`//p[contains(text(), 'Save')]`);
+
+                const newGrandparentDivClassNameOfPrice = await page.evaluate((element) => {
+                    const grandparentDiv = element.closest("div")?.parentNode;
+                    // Return an object with class name and data from two child elements
+                    if (grandparentDiv) {
+                        const className = grandparentDiv.classList.value;
+                        const link =
+                            grandparentDiv.querySelector("a ")?.href;
+                        const childData2 =
+                            grandparentDiv.querySelector('.flex')?.innerText;
+                        return { className, link, childData2 };
+                    }
+                    return null;
+                }, textElementHandleOfPrice);
+                // const oldPrice = oldPricegrandparentDivClassName.childData2.split('\n').filter((n) => n);
+                // const newPrice = newGrandparentDivClassNameOfPrice.childData2.split('\n').filter((n) => n);
+                if (oldPricegrandparentDivClassName.childData2 === newGrandparentDivClassNameOfPrice.childData2) {
+                    utils.logsaved(errorLog, `${testCast}`, `when user select  check in - check out date than price detail page must be update automatically & user can verify price details not updated`)
+                    utils.errorLog(`${testCast} :when user select  check in - check out date than price detail page must be update automatically & user can verify price details not updated`);
+                } else {
+                    utils.logsaved(passLog, `${testCast}`, `when user select  check in - check out date than price detail page must be update automatically & user can verify price details`)
+                    utils.successLog(`${testCast} :when user select  check in - check out date than price detail page must be update automatically & user can verify price details`);
+                }
+            } else {
+                utils.logsaved(errorLog, `${testCast}`, `${title} section visible`)
+                utils.errorLog(`${testCast} :${title} section not visible`);
+                return;
+            }
+            resolve(true);
+        });
+
+    } catch (error) {
+        console.log(error)
+    }
+}
+const verifyNearByProperty = async (page, errorLog, passLog, testCast, title) => {
+    try {
+
+        const textElementHandle = await page.waitForSelector(`.nearby-properties`);
+        // Get the grandparent div's class name
+        const grandparentDivClassName = await page.evaluate((element) => {
+            const grandparentDiv = element.closest("div")?.parentNode;
+            // Return an object with class name and data from three child elements
+            if (grandparentDiv) {
+                const className = grandparentDiv.classList.value;
+                // const childData2 = grandparentDiv.querySelector('.calendar_btn')?.innerText;
+                const propertyList = document.querySelectorAll(`.nearby-properties a`);
+                const links = Array.from(propertyList, element => {
+                    return {
+                        link: element.getAttribute('href')
+                    }
+                });
+                return { className, links };
+            }
+            return null;
+        }, textElementHandle);
+
+        if (grandparentDivClassName.links.length <= 10) {
+            utils.logsaved(passLog, `${testCast}-01`, `After selecting the check in-check out date Explore nearby properties must be visible (Max 10 Properties)`)
+            utils.successLog(`${testCast}-01 :After selecting the check in-check out date Explore nearby properties must be visible (Max 10 Properties)`);
+        } else {
+            utils.logsaved(errorLog, `${testCast}-01`, `After selecting the check in-check out date Explore nearby properties must be visible (Max 10 Properties)`)
+            utils.errorLog(`${testCast}-01 :${title}  After selecting the check in-check out date Explore nearby properties must be visible (Max 10 Properties)`);
+        }
+    } catch (error) {
+        console.log(error)
+        utils.logsaved(errorLog, `${testCast}`, `${title} section is not visible`)
+        utils.errorLog(`${testCast} :${title} section is not visible`);
+    }
+}
+
+const priceDetailBox = async (page, errorLog, passLog, testCast, title) => {
+    try {
+        const hostFee = await utils.findText(
+            page,
+            `//button[contains(text(), 'Host Fees')]`
+        );
+        if (hostFee) {
+            await hostFee.click()
+            utils.logsaved(passLog, `${testCast}-01-01`, `Users should be able to verify Host fees Price Breakup in the Price Detail Box.`)
+            utils.successLog(`${testCast}-01-01 :Users should be able to verify Host fees Price Breakup in the Price Detail Box.`);
+
+            utils.logsaved(passLog, `PD_TC_22-01-01`, `Users should be able to verify Host fees Price Breakup in the Price Detail Box.`)
+            utils.successLog(`PD_TC_22-01-01 :Users should be able to verify Host fees Price Breakup in the Price Detail Box.`);
+        } else {
+            utils.logsaved(errorLog, `${testCast}-01-01`, `Host fees and service Fees  Price Breakup are not visible in the Price Detail Box.`)
+            utils.errorLog(`${testCast}-01-01 : Host fees and service Fees  Price Breakup are not visible in the Price Detail Box.`);
+
+            utils.logsaved(errorLog, `PD_TC_22-01-01`, `Host fees and service Fees  Price Breakup are not visible in the Price Detail Box.`)
+            utils.errorLog(`PD_TC_22-01-01 : Host fees and service Fees  Price Breakup are not visible in the Price Detail Box.`);
+        }
+
+        const hideHostFeeModel = await utils.closemodel(page);
+        if (hideHostFeeModel) {
+            utils.logsaved(passLog, `PD_TC_22-01-01`, `Host fees Popup should be close`)
+            utils.successLog(`PD_TC_22-01-01 :Host fees Popup should be close`);
+        } else {
+            utils.logsaved(errorLog, `PD_TC_22-01-01`, `Host fees popup not close`)
+            utils.errorLog(`PD_TC_22-01-01 : Host fees popup not close`);
+        }
+
+        const serviceFee = await utils.findText(
+            page,
+            `//button[contains(text(), 'Service Fee')]`
+        );
+        if (serviceFee) {
+            await serviceFee.click()
+            utils.logsaved(passLog, `${testCast}-01-02`, `Users should be able to verify service Fees Price Breakup in the Price Detail Box.`)
+            utils.successLog(`${testCast}-01-02 : Users should be able to verify service Fees Price Breakup in the Price Detail Box.`);
+
+            utils.logsaved(passLog, `PD_TC_22-01-02`, `Users should be able to verify service Fees Price Breakup in the Price Detail Box.`)
+            utils.successLog(`PD_TC_22-01-02 : Users should be able to verify service Fees Price Breakup in the Price Detail Box.`);
+        } else {
+            utils.logsaved(errorLog, `${testCast}-01-02`, `Host fees and service Fees  Price Breakup are not visible in the Price Detail Box.`)
+            utils.errorLog(`${testCast}-01-02 :  Host fees and service Fees  Price Breakup are not visible in the Price Detail Box.`);
+
+            utils.logsaved(errorLog, `PD_TC_22-01-02`, `Host fees and service Fees  Price Breakup are not visible in the Price Detail Box.`)
+            utils.errorLog(`PD_TC_22-01-02 :  Host fees and service Fees  Price Breakup are not visible in the Price Detail Box.`);
+        }
+
+        const serviceHostFeeModel = await utils.closemodel(page);
+        if (serviceHostFeeModel) {
+            utils.logsaved(passLog, `PD_TC_22-01-01`, `service fees Popup should be close`)
+            utils.successLog(`PD_TC_22-01-01 :service fees Popup should be close`);
+        } else {
+            utils.logsaved(errorLog, `PD_TC_22-01-01`, `service fees popup not close`)
+            utils.errorLog(`PD_TC_22-01-01 : service fees popup not close`);
+        }
+
+    } catch (error) {
+        console.log(`error`, error)
+        utils.logsaved(errorLog, `${testCast}`, `Price section is not visible`)
+        utils.errorLog(`${testCast} :${title}  Price section is not visible`);
+    }
+}
+const bookNow = async (page, errorLog, passLog, testCast, title) => {
+    try {
+        const bookNowBtn = await utils.findText(
+            page,
+            `//button[contains(text(), '${title}')]`
+        );
+        if (bookNowBtn) {
+            await bookNowBtn.click();
+            utils.logsaved(passLog, `${testCast}`, `${title} section visible`)
+            utils.successLog(`${testCast} :${title} section visible`);
+            await page.waitForTimeout(3000);
+
+
+            const isLogin = await utils.findText(
+                page,
+                `//form//p[contains(text(), 'Log in or sign up')]`
+            );
+            if (isLogin) {
+                utils.logsaved(passLog, `PD_TC_23`, `When user click on book now button it will ask to sign in in the system `)
+                utils.successLog(`PD_TC_23 :When user click on book now button it will ask to sign in in the system `);
+            } else {
+                utils.logsaved(errorLog, `PD_TC_23`, `When user click on book now button it will ask to sign in in the system `)
+                utils.errorLog(`PD_TC_23 : When user click on book now button it will ask to sign in in the system `);
+            }
+
+            const textElementHandle = await page.waitForSelector(`.items-stretch`);
+            // Get the grandparent div's class name
+            const grandparentDivClassName = await page.evaluate((element) => {
+                const grandparentDiv = element.closest("div")?.parentNode;
+                // Return an object with class name and data from three child elements
+                if (grandparentDiv) {
+                    const className = grandparentDiv.classList.value;
+                    const propertyList = document.querySelectorAll(`.items-stretch p`);
+                    const pValue = Array.from(propertyList, element => {
+                        return {
+                            text: element.innerText
+                        }
+                    });
+                    const propertytext = document.querySelectorAll(`.items-stretch span`);
+                    const spanValue = Array.from(propertytext, element => {
+                        return {
+                            text: element.innerText
+                        }
+                    });
+                    const btn = document.querySelectorAll(`.w-full button`);
+                    const btnValue = Array.from(btn, element => {
+                        return {
+                            text: element.innerText
+                        }
+                    });
+                    return { className, pValue, spanValue, btnValue };
+                }
+                return null;
+            }, textElementHandle);
+            // if (grandparentDivClassName.pValue.length > 0){
+            //     utils.logsaved(passLog, `PD_TC_24-01`, `When user click on book now button it will ask to sign in in the system `)
+            //     utils.successLog(`PD_TC_24-01 :When user click on book now button it will ask to sign in in the system `);
+            // } else {
+            //     utils.logsaved(errorLog, `PD_TC_24-01`, `When user click on book now button it will ask to sign in in the system `)
+            //     utils.errorLog(`PD_TC_24-01 : When user click on book now button it will ask to sign in in the system `);
+            // }
+            const guest = await utils.findText(
+                page,
+                `//h4[contains(text(), '${title}')]`
+              );
+
+                console.log()
+        } else {
+            utils.logsaved(errorLog, `${testCast}`, `${title} section visible`)
+            utils.errorLog(`${testCast} :${title} section not visible`);
+            return;
+        }
+    } catch (error) {
+        utils.logsaved(errorLog, `${testCast}`, `${title} section not visible`)
+        utils.errorLog(`${testCast} :${title} section not visible`);
+    }
+}
 exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
     try {
 
@@ -488,7 +824,7 @@ exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
             executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
         });
         page = await browser.newPage();
-        await page.goto(`${process.env.DOMAIN_URL}vacation-rentals/Gatlinburg--Tennessee--USA`);
+        await page.goto(`${process.env.DOMAIN_URL}/vacation-rentals/Gatlinburg--Tennessee--USA`);
         await page.waitForTimeout(1000); // Wait for some time to ensure the page is loaded
         await page.setViewport({ width: 1536, height: 864 });
         await utils.removeFunction(page);
@@ -500,13 +836,19 @@ exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
         // await newPage.goto('https://uat.whimstay.com/detail/Splash-Mountain-Lodge-Play-games-splash-in-your-private-indoor-pool/d1568696f906bfcbf22dec4af2170e5b?name=Sevierville%2C+Tennessee%2C+USA&check_in=2024-06-06&check_out=2024-05-08&adultsCount=1&childrenCount=0&suitablePet=false&timestamp=1705917431019')
         await newPage.setViewport({ width: 1536, height: 864 });
         await detailScreenVerification(newPage, errorLog, passLog, 'PD_TC_02', 'Property detail');
-        const modelRes = await shareModel(newPage, errorLog, passLog, 'PD_TC_03', 'Property share model');
-        await shareLinkOpen(modelRes, errorLog, passLog, 'PD_TC_04', browser);
-        await utils.sleep(2000)
-        await imagesGallary(newPage, errorLog, passLog, 'PD_TC_05', 'Image Gallary');
-        await checkDescription(newPage, errorLog, passLog, 'PD_TC_07', 'Description');
-        await verifySleepingArrrangement(newPage, errorLog, passLog, 'PD_TC_08', 'Sleeping arrangment');
-        await verifyAnmimities(newPage, errorLog, passLog, 'PD_TC_09', 'Verify Animities');
+        // const modelRes = await shareModel(newPage, errorLog, passLog, 'PD_TC_03', 'Property share model');
+        // await shareLinkOpen(modelRes, errorLog, passLog, 'PD_TC_04', browser);
+        // await utils.sleep(2000)
+        // await imagesGallary(newPage, errorLog, passLog, 'PD_TC_05', 'Image Gallary');
+        // await checkDescription(newPage, errorLog, passLog, 'PD_TC_07', 'Description');
+        // await verifySleepingArrrangement(newPage, errorLog, passLog, 'PD_TC_08', 'Sleeping arrangment');
+        // await verifyAnmimities(newPage, errorLog, passLog, 'PD_TC_09', 'Verify Animities');
+        await nearbyDestinations(newPage, errorLog, passLog, 'PD_TC_12', 'Verify the Explore nearby destinations');
+        await priceSelection(newPage, errorLog, passLog, 'PD_TC_15', 'Checkin- checkout');
+        await utils.sleep(5000);
+        await verifyNearByProperty(newPage, errorLog, passLog, 'PD_TC_16', 'Verify Explore nearby properties');
+        await priceDetailBox(newPage, errorLog, passLog, 'PD_TC_21', 'Verify Explore nearby properties');
+        await bookNow(newPage, errorLog, passLog, 'PD_TC_23', 'Book Now');
     } catch (error) {
         console.log(error)
     }

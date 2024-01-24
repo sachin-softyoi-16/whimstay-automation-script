@@ -373,7 +373,7 @@ exports.checkImagesLoad = async (page, classname) => {
     const urls = Array.from(imageElements).map(img => img.src);
     return urls;
   }, parentClass);
-  
+
   let loadedImages = [];
   for (const imageUrl of imageUrls) {
     const isLoaded = await page.evaluate(async (url) => {
@@ -391,4 +391,17 @@ exports.checkImagesLoad = async (page, classname) => {
   }
   return { totalImage: imageUrls, loadedImages: loadedImages }
 
+}
+exports.closemodel = async (page) => {
+  const findHeading = await this.findText(
+    page,
+    `//button[@aria-label='Close']`
+  );
+  if (findHeading) {
+    await findHeading.click();
+    return true
+  } else {
+    return false
+
+  }
 }
