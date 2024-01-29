@@ -44,6 +44,18 @@ exports.findText = async (page, text) => {
     console.log(error);
   }
 };
+
+// const myutils = require('./')
+exports.findALLText = async (page, text) => {
+  try {
+    // const xpath = `//button[contains(text(), '${buttonText}')]`;
+    await page.waitForXPath(text);
+    const button = await page.$x(text);
+    return button;
+  } catch (error) {
+    console.log(error);
+  }
+};
 exports.getTextFromTag = async (page, tagSelector) => {
   try {
     await page.waitForSelector(tagSelector);
@@ -60,7 +72,7 @@ exports.getTextFromTag1 = async (page, tagSelector) => {
   try {
     await page.waitForXPath(tagSelector);
     const innerText = await page.$x(tagSelector, (element) => {
-      return element.textContent;
+      return element.innerText;
     });
     return innerText;
   } catch (err) {
@@ -156,7 +168,7 @@ exports.radomUserName = (length) => {
   return result;
 }
 
-const getPassword = async (mobile) => {
+exports.getPassword = async (mobile) => {
   try {
     let db = await client.connectToDatabase();
     // const otpCollection = await db.listCollections().toArray();
@@ -404,4 +416,27 @@ exports.closemodel = async (page) => {
     return false
 
   }
+}
+exports.getCalenderDate = async (page) => {
+  // const textElementHandle = await page.waitForXPath(`//button[@aria-controls="headlessui-popover-panel-:rr:"]`);
+  const textElementHandle = await page.waitForSelector(`#calendarTrigger`);
+  // Get the grandparent div's class name
+  const grandparentDivClassName = await page.evaluate((element) => {
+    const grandparentDiv = element.closest("div")?.parentNode;
+    // Return an object with class name and data from three child elements
+    if (grandparentDiv) {
+      const className = grandparentDiv.classList.value;
+      const childData2 = grandparentDiv.querySelector('.calendar_btn')?.innerText;
+      const aTagelements = document.querySelectorAll(`.calendar_btn`);
+      const dates = Array.from(aTagelements, element => {
+        return {
+          className: element.getAttribute('class'), value: element.innerText.trim(), disable:
+            element.disabled, id: element.getAttribute('id')
+        }
+      });
+      return { className, dates, childData2 };
+    }
+    return null;
+  }, textElementHandle);
+  return grandparentDivClassName;
 }

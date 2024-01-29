@@ -573,60 +573,58 @@ const priceSelection = async (page, errorLog, passLog, testCast, title) => {
                 await findHeading.click();
                 await utils.sleep(1000);
 
-                // const textElementHandle = await page.waitForXPath(`//button[@aria-controls="headlessui-popover-panel-:rr:"]`);
-                const textElementHandle = await page.waitForSelector(`#calendarTrigger`);
                 // Get the grandparent div's class name
-                const grandparentDivClassName = await page.evaluate((element) => {
-                    const grandparentDiv = element.closest("div")?.parentNode;
-                    // Return an object with class name and data from three child elements
-                    if (grandparentDiv) {
-                        const className = grandparentDiv.classList.value;
-                        const childData2 = grandparentDiv.querySelector('.calendar_btn')?.innerText;
-                        const aTagelements = document.querySelectorAll(`.calendar_btn`);
-                        const dates = Array.from(aTagelements, element => {
-                            return {
-                                className: element.getAttribute('class'), value: element.innerText.trim(), disable:
-                                    element.disabled, id: element.getAttribute('id')
-                            }
-                        });
-                        return { className, dates, childData2 };
-                    }
-                    return null;
-                }, textElementHandle);
-                const availableDates = grandparentDivClassName.dates.filter((obj) => !obj.className.includes('calendar_btn_not_available  '))
-                // const checkoutSDate = grandparentDivClassName.dates.filter((obj) => !obj.className.includes('calendar_btn_not_available  '))
-                const datesLength = Math.floor((Math.random() * availableDates.length) + 1)
-                const checkIn = availableDates[datesLength]
-                const checkOut = availableDates[datesLength + 1]
-                await page.waitForSelector(`#${checkIn.id}`);
-                await page.click(`#${checkIn.id}`);
-                await page.waitForTimeout(1000); // Wait for some time to ensure the page is loaded
-                await page.click(`#${checkOut.id}`);
-                await utils.sleep(1000);
-                const textElementHandleOfPrice = await page.waitForXPath(`//p[contains(text(), 'Save')]`);
+                const grandparentDivClassName = await utils.getCalenderDate(page);
+                let availableDates = grandparentDivClassName.dates.find((obj) => !(obj.disable && obj.className.includes('calendar_btn_not_available  ')))
+                if (availableDates) {
+                    // const checkoutSDate = grandparentDivClassName.dates.filter((obj) => !obj.className.includes('calendar_btn_not_available  '))
+                    // const datesLength = Math.floor((Math.random() * availableDates.length) + 1)
+                    const checkIn = availableDates;
+                    // const checkOut = availableDates[datesLength]
+                    console.log(checkIn)
+                    await page.waitForSelector(`#${checkIn.id}`);
+                    await page.click(`#${checkIn.id}`);
+                    let checkOut = await utils.getCalenderDate(page);
+                     availableDates = checkOut.dates.find((obj) => !obj.disable)
 
-                const newGrandparentDivClassNameOfPrice = await page.evaluate((element) => {
-                    const grandparentDiv = element.closest("div")?.parentNode;
-                    // Return an object with class name and data from two child elements
-                    if (grandparentDiv) {
-                        const className = grandparentDiv.classList.value;
-                        const link =
-                            grandparentDiv.querySelector("a ")?.href;
-                        const childData2 =
-                            grandparentDiv.querySelector('.flex')?.innerText;
-                        return { className, link, childData2 };
+                    await page.click(`#${availableDates.id}`);
+                    await utils.sleep(1000);
+                    const textElementHandleOfPrice = await page.waitForXPath(`//p[contains(text(), 'Save')]`);
+
+                    const newGrandparentDivClassNameOfPrice = await page.evaluate((element) => {
+                        const grandparentDiv = element.closest("div")?.parentNode;
+                        // Return an object with class name and data from two child elements
+                        if (grandparentDiv) {
+                            const className = grandparentDiv.classList.value;
+                            const link =
+                                grandparentDiv.querySelector("a ")?.href;
+                            const childData2 =
+                                grandparentDiv.querySelector('.flex')?.innerText;
+                            return { className, link, childData2 };
+                        }
+                        return null;
+                    }, textElementHandleOfPrice);
+                    // const oldPrice = oldPricegrandparentDivClassName.childData2.split('\n').filter((n) => n);
+                    // const newPrice = newGrandparentDivClassNameOfPrice.childData2.split('\n').filter((n) => n);
+                    if (oldPricegrandparentDivClassName.childData2 === newGrandparentDivClassNameOfPrice.childData2) {
+                        utils.logsaved(errorLog, `${testCast}`, `when user select  check in - check out date than price detail page must be update automatically & user can verify price details not updated`)
+                        utils.errorLog(`${testCast} :when user select  check in - check out date than price detail page must be update automatically & user can verify price details not updated`);
+                    } else {
+                        utils.logsaved(passLog, `${testCast}`, `when user select  check in - check out date than price detail page must be update automatically & user can verify price details`)
+                        utils.successLog(`${testCast} :when user select  check in - check out date than price detail page must be update automatically & user can verify price details`);
                     }
-                    return null;
-                }, textElementHandleOfPrice);
-                // const oldPrice = oldPricegrandparentDivClassName.childData2.split('\n').filter((n) => n);
-                // const newPrice = newGrandparentDivClassNameOfPrice.childData2.split('\n').filter((n) => n);
-                if (oldPricegrandparentDivClassName.childData2 === newGrandparentDivClassNameOfPrice.childData2) {
-                    utils.logsaved(errorLog, `${testCast}`, `when user select  check in - check out date than price detail page must be update automatically & user can verify price details not updated`)
-                    utils.errorLog(`${testCast} :when user select  check in - check out date than price detail page must be update automatically & user can verify price details not updated`);
+                    await priceDetailBox(page, errorLog, passLog, 'PD_TC_21', 'Verify Explore nearby properties');
+                    await bookNow(page, errorLog, passLog, 'PD_TC_23', 'Book Now');
+                    await addguestFeature(page, errorLog, passLog, 'PD_TC_24', 'Book Now');
+                    await checkLogin(page, errorLog, passLog, 'PD_TC_25', 'Book Now');
+                    // await bookingRefund(page, errorLog, passLog, 'PD_TC_29', 'Book Now');
+
                 } else {
-                    utils.logsaved(passLog, `${testCast}`, `when user select  check in - check out date than price detail page must be update automatically & user can verify price details`)
-                    utils.successLog(`${testCast} :when user select  check in - check out date than price detail page must be update automatically & user can verify price details`);
+                    utils.logsaved(passLog, `${testCast}`, ` Dates not available in the calendar`);
+                    utils.successLog(`${testCast} : Dates not available in the calendar`);
+                    // throw `Dates not available in the calendar`;
                 }
+
             } else {
                 utils.logsaved(errorLog, `${testCast}`, `${title} section visible`)
                 utils.errorLog(`${testCast} :${title} section not visible`);
@@ -669,7 +667,7 @@ const verifyNearByProperty = async (page, errorLog, passLog, testCast, title) =>
             utils.errorLog(`${testCast}-01 :${title}  After selecting the check in-check out date Explore nearby properties must be visible (Max 10 Properties)`);
         }
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         utils.logsaved(errorLog, `${testCast}`, `${title} section is not visible`)
         utils.errorLog(`${testCast} :${title} section is not visible`);
     }
@@ -747,10 +745,22 @@ const bookNow = async (page, errorLog, passLog, testCast, title) => {
         );
         if (bookNowBtn) {
             await bookNowBtn.click();
+            await utils.sleep(10000)
             utils.logsaved(passLog, `${testCast}`, `${title} section visible`)
             utils.successLog(`${testCast} :${title} section visible`);
             await page.waitForTimeout(3000);
 
+            const priceSection = await utils.findText(
+                page,
+                `//p[contains(text(), 'Price Details')]`
+            );
+            if (priceSection) {
+                utils.logsaved(passLog, `PD_TC_25`, `1. By clicking on the book now button user will redirect to the checkout page where user all information will display prefield`)
+                utils.successLog(`PD_TC_27 :1. By clicking on the book now button user will redirect to the checkout page where user all information will display prefield`);
+            } else {
+                utils.logsaved(errorLog, `PD_TC_25`, `1. By clicking on the book now button user will redirect to the checkout page where user all information will display prefield`)
+                utils.errorLog(`PD_TC_27 : 1. By clicking on the book now button user will redirect to the checkout page where user all information will display prefield`);
+            }
 
             const isLogin = await utils.findText(
                 page,
@@ -764,56 +774,185 @@ const bookNow = async (page, errorLog, passLog, testCast, title) => {
                 utils.errorLog(`PD_TC_23 : When user click on book now button it will ask to sign in in the system `);
             }
 
-            const textElementHandle = await page.waitForSelector(`.items-stretch`);
-            // Get the grandparent div's class name
-            const grandparentDivClassName = await page.evaluate((element) => {
-                const grandparentDiv = element.closest("div")?.parentNode;
-                // Return an object with class name and data from three child elements
-                if (grandparentDiv) {
-                    const className = grandparentDiv.classList.value;
-                    const propertyList = document.querySelectorAll(`.items-stretch p`);
-                    const pValue = Array.from(propertyList, element => {
-                        return {
-                            text: element.innerText
-                        }
-                    });
-                    const propertytext = document.querySelectorAll(`.items-stretch span`);
-                    const spanValue = Array.from(propertytext, element => {
-                        return {
-                            text: element.innerText
-                        }
-                    });
-                    const btn = document.querySelectorAll(`.w-full button`);
-                    const btnValue = Array.from(btn, element => {
-                        return {
-                            text: element.innerText
-                        }
-                    });
-                    return { className, pValue, spanValue, btnValue };
-                }
-                return null;
-            }, textElementHandle);
-            // if (grandparentDivClassName.pValue.length > 0){
-            //     utils.logsaved(passLog, `PD_TC_24-01`, `When user click on book now button it will ask to sign in in the system `)
-            //     utils.successLog(`PD_TC_24-01 :When user click on book now button it will ask to sign in in the system `);
-            // } else {
-            //     utils.logsaved(errorLog, `PD_TC_24-01`, `When user click on book now button it will ask to sign in in the system `)
-            //     utils.errorLog(`PD_TC_24-01 : When user click on book now button it will ask to sign in in the system `);
-            // }
-            const guest = await utils.findText(
-                page,
-                `//h4[contains(text(), '${title}')]`
-              );
+            // cancle policy
+            // const findHeading = await utils.findALLText(
+            //     page,
+            //     `//button[@aria-label='save-search']`
+            // );
 
-                console.log()
+            // if (findHeading[1]) {
+            //     await findHeading[1].click();
+            // }
+
         } else {
             utils.logsaved(errorLog, `${testCast}`, `${title} section visible`)
             utils.errorLog(`${testCast} :${title} section not visible`);
             return;
         }
     } catch (error) {
+        console.log(error)
         utils.logsaved(errorLog, `${testCast}`, `${title} section not visible`)
         utils.errorLog(`${testCast} :${title} section not visible`);
+    }
+}
+const addguestFeature = async (page, errorLog, passLog, testCast, title) => {
+    try {
+        const textElementHandle = await page.waitForSelector(`.items-stretch`);
+        // Get the grandparent div's class name
+        const grandparentDivdata = await page.evaluate((element) => {
+            const grandparentDiv = element.closest("div")?.parentNode;
+            // Return an object with class name and data from three child elements
+            if (grandparentDiv) {
+                const className = grandparentDiv.classList.value;
+                const propertyList = document.querySelectorAll(`.items-stretch p`);
+                const pValue = Array.from(propertyList, element => {
+                    return {
+                        text: element.innerText
+                    }
+                });
+                const propertytext = document.querySelectorAll(`.items-stretch span`);
+                const spanValue = Array.from(propertytext, element => {
+                    return {
+                        text: element.innerText
+                    }
+                });
+                const btn = document.querySelectorAll(`.w-full button`);
+                const btnValue = Array.from(btn, element => {
+                    return {
+                        text: element.innerText,
+                        ids: element.getAttribute('id')
+
+                    }
+                });
+                const section = document.querySelectorAll(`section`);
+                const sectionIDS = Array.from(section, element => {
+                    return {
+                        text: element.getAttribute('id')
+                    }
+                });
+                return { className, pValue, spanValue, btnValue, sectionIDS };
+            }
+            return null;
+        }, textElementHandle);
+
+        let totalGuest = grandparentDivdata.spanValue.find((obj) => obj.text.includes('guests'))
+        const guestBtn = grandparentDivdata.btnValue.filter((obj) => obj.text.includes('Guest'))
+        totalGuest = totalGuest.text.substring(0, 1);
+        const guest = await utils.findALLText(
+            page,
+            `//button[contains(text(), '${guestBtn[1].text}')]`
+        );
+        if (guest) {
+            await guest[1].click();
+            await utils.sleep(1000);
+
+            // Add guest
+            const addgust = await utils.findALLText(
+                page,
+                `//button[@aria-label='Add']`
+            );
+            const removeGust = await utils.findALLText(
+                page,
+                `//button[@aria-label='Subtract']`
+            );
+            if (addgust && removeGust) {
+                for (let index = 0; index < Number(totalGuest) + 1; index++) {
+                    await addgust[0].click();
+                    await addgust[1].click();
+                }
+
+                const paragraphs = await page.$x("//div[@role='group']//p");
+                const innerTextArray = await Promise.all(paragraphs.map(p => page.evaluate(el => el.textContent.trim(), p)));
+                for (let index = Number(totalGuest); index >= 1; index--) {
+                    await removeGust[0].click();
+                    await removeGust[1].click();
+                }
+                await page.click(`#Pets`);
+
+                utils.logsaved(passLog, `${testCast}`, `1. User able to add or remove Guest (Min 1 & Max as per property allowed) `)
+                utils.successLog(`${testCast} :1. User able to add or remove Guest (Min 1 & Max as per property allowed) `);
+                utils.logsaved(passLog, `${testCast}`, `2. User able to add or remove children.`)
+                utils.successLog(`${testCast} : 2. User able to add or remove children.`);
+                utils.logsaved(passLog, `${testCast}`, `3.  Pet option Selection`);
+                utils.successLog(`${testCast} : 3.  Pet option Selection`);
+                await page.click(`#Pets`);
+            } else {
+                utils.logsaved(errorLog, `${testCast}`, ` Have no option for add and remove guest`);
+                utils.errorLog(`${testCast} : Have no option for add and remove guest`);
+            }
+
+            const closeGuestModel = await utils.findText(
+                page,
+                `//button[contains(text(), 'Close')]`
+            );
+            if (closeGuestModel) {
+                await closeGuestModel.click();
+            }
+        } else {
+            console.log(`add guest button not working`)
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const checkLogin = async (page, errorLog, passLog, testCast, title) => {
+    try {
+
+        const textBoxSelector = 'input[type="tel"]';
+        await page.waitForSelector(textBoxSelector);
+        await page.$eval(textBoxSelector, (textBox) => (textBox.value = ""));
+        var textToEnter = " 7043629862";
+        await page.type(textBoxSelector, textToEnter, { delay: 100 });
+        const btnValidate = await utils.checkButtonAvaibilty(page, `button[type="submit"]`);
+        if (!btnValidate) {
+            const submitBtn = await utils.findText(
+                page,
+                `//button[contains(text(), 'Continue')]`
+            );
+            if (submitBtn) {
+                await submitBtn.click();
+
+                const isOtpResp = await utils.getPassword(`+1${textToEnter.trim()}`);
+                var otpcode = `${isOtpResp[0].otp_code}`;
+                console.log(otpcode)
+                // await utils.sleep(1000)
+                await page.type('input[type="tel"]', otpcode, { delay: 100 });
+                await page.waitForTimeout(2000);
+
+                utils.logsaved(passLog, `${testCast}`, ` Login Success in booking page`)
+                utils.successLog(`${testCast} : Login Success in booking page`);
+                await bookingRefund(page, errorLog, passLog, 'PD_TC_29', 'Book Now');
+            } else {
+                utils.logsaved(passLog, `${testCast}`, ` Login failed in booking page`)
+                utils.successLog(`${testCast} : Login failed in booking page`);
+            }
+        } else {
+            utils.logsaved(errorLog, `${testCast}`, `Mobile Number is invalid`)
+            utils.errorLog(`${testCast} : Mobile Number is invalid`);
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const bookingRefund = async (page, errorLog, passLog, testCast, title) => {
+    try {
+        await page.click('#non_refundable');
+        await page.click('#non_refundable');
+        const booknow = await utils.findText(
+            page,
+            `//button[contains(text(), 'Complete Booking')]`
+        );
+        if (booknow) {
+            await booknow.click();
+            await page.waitForTimeout(2000); // Wait for some time to ensure the page is loaded
+
+        }
+
+
+    } catch (error) {
+        console.log(error)
     }
 }
 exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
@@ -847,8 +986,10 @@ exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
         await priceSelection(newPage, errorLog, passLog, 'PD_TC_15', 'Checkin- checkout');
         await utils.sleep(5000);
         await verifyNearByProperty(newPage, errorLog, passLog, 'PD_TC_16', 'Verify Explore nearby properties');
-        await priceDetailBox(newPage, errorLog, passLog, 'PD_TC_21', 'Verify Explore nearby properties');
-        await bookNow(newPage, errorLog, passLog, 'PD_TC_23', 'Book Now');
+        // await priceDetailBox(newPage, errorLog, passLog, 'PD_TC_21', 'Verify Explore nearby properties');
+        // await bookNow(newPage, errorLog, passLog, 'PD_TC_23', 'Book Now');
+        // // await addguestFeature(newPage, errorLog, passLog, 'PD_TC_23', 'Book Now');
+        // await checkLogin(newPage, errorLog, passLog, 'PD_TC_23', 'Book Now');
     } catch (error) {
         console.log(error)
     }
