@@ -428,15 +428,28 @@ exports.getCalenderDate = async (page) => {
       const className = grandparentDiv.classList.value;
       const childData2 = grandparentDiv.querySelector('.calendar_btn')?.innerText;
       const aTagelements = document.querySelectorAll(`.calendar_btn`);
+
+      const pValue = document.querySelectorAll(`path`);
+      const toggle = Array.from(pValue, element => {
+        return {
+          className: element.getAttribute('class'), value: element.getAttribute("d"), id: element.getAttribute('id')
+        }
+      });
       const dates = Array.from(aTagelements, element => {
         return {
           className: element.getAttribute('class'), value: element.innerText.trim(), disable:
             element.disabled, id: element.getAttribute('id')
         }
       });
-      return { className, dates, childData2 };
+      return { className, dates, childData2, toggle };
     }
     return null;
   }, textElementHandle);
   return grandparentDivClassName;
+}
+
+exports.clickOnButtonUsingLable = async (page) => {
+  await page.waitForXPath("//button[@aria-label='save-search']", { visible: true, timeout: 5000 });
+  const [button] = await page.$x("//button[@aria-label='save-search']");
+
 }

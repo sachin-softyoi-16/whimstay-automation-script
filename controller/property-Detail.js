@@ -282,12 +282,12 @@ const shareLinkOpen = async (link, errorLog, passLog, testCast, browser) => {
             await newPage.close();
         } else {
             utils.logsaved(errorLog, `${testCast}`, `Redirect not working`)
-            utils.errorLog($`{testCast} : Redirect not working`);
+            utils.errorLog(`${testCast} : Redirect not working`);
         }
     } catch (error) {
         console.log(error)
         utils.logsaved(errorLog, `${testCast}`, `Redirect not working`)
-        utils.errorLog($`{testCast} : Redirect not working`);
+        utils.errorLog(`${testCast} : Redirect not working`);
     }
 }
 
@@ -573,20 +573,34 @@ const priceSelection = async (page, errorLog, passLog, testCast, title) => {
                 await findHeading.click();
                 await utils.sleep(1000);
 
+
+
                 // Get the grandparent div's class name
                 const grandparentDivClassName = await utils.getCalenderDate(page);
-                let availableDates = grandparentDivClassName.dates.find((obj) => !(obj.disable && obj.className.includes('calendar_btn_not_available  ')))
+                // const nextBtn = grandparentDivClassName.toggle.filter((obj) => !obj.disable && !obj.className.includes('calendar_btn_not_available  '))
+                // await page.click(`path[@d='M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z']`);
+                let availableDates = grandparentDivClassName.dates.filter((obj) => !obj.disable && !obj.className.includes('calendar_btn_not_available  '))
                 if (availableDates) {
                     // const checkoutSDate = grandparentDivClassName.dates.filter((obj) => !obj.className.includes('calendar_btn_not_available  '))
-                    // const datesLength = Math.floor((Math.random() * availableDates.length) + 1)
-                    const checkIn = availableDates;
+                    const datesLength = Math.floor(Math.random() * ((availableDates.length - 3) - 0 + 1))
+                    const checkIn = availableDates[0];
                     // const checkOut = availableDates[datesLength]
+                    console.log(`checkIn date`, checkIn)
+                    if (!checkIn) {
+                        utils.logsaved(errorLog, `${testCast}`, ` check In dates not available. `)
+                        utils.errorLog(`${testCast} : check In dates not available.`);
+                        return;
+                    }
                     console.log(checkIn)
                     await page.waitForSelector(`#${checkIn.id}`);
                     await page.click(`#${checkIn.id}`);
                     let checkOut = await utils.getCalenderDate(page);
-                     availableDates = checkOut.dates.find((obj) => !obj.disable)
-
+                    availableDates = checkOut.dates.find((obj) => !obj.disable)
+                    if (!availableDates) {
+                        utils.logsaved(errorLog, `${testCast}`, ` checkout dates not available. `)
+                        utils.errorLog(`${testCast} : checkout dates not available.`);
+                        return;
+                    }
                     await page.click(`#${availableDates.id}`);
                     await utils.sleep(1000);
                     const textElementHandleOfPrice = await page.waitForXPath(`//p[contains(text(), 'Save')]`);
@@ -617,8 +631,9 @@ const priceSelection = async (page, errorLog, passLog, testCast, title) => {
                     await bookNow(page, errorLog, passLog, 'PD_TC_23', 'Book Now');
                     await addguestFeature(page, errorLog, passLog, 'PD_TC_24', 'Book Now');
                     await checkLogin(page, errorLog, passLog, 'PD_TC_25', 'Book Now');
-                    // await bookingRefund(page, errorLog, passLog, 'PD_TC_29', 'Book Now');
 
+                    await bookingRefund(page, errorLog, passLog, 'PD_TC_29', 'Book Now');
+                    await thakupageVerification(page, errorLog, passLog, 'PD_TC_26', 'Thank You page');
                 } else {
                     utils.logsaved(passLog, `${testCast}`, ` Dates not available in the calendar`);
                     utils.successLog(`${testCast} : Dates not available in the calendar`);
@@ -916,13 +931,13 @@ const checkLogin = async (page, errorLog, passLog, testCast, title) => {
                 const isOtpResp = await utils.getPassword(`+1${textToEnter.trim()}`);
                 var otpcode = `${isOtpResp[0].otp_code}`;
                 console.log(otpcode)
-                // await utils.sleep(1000)
+                await utils.sleep(1000)
                 await page.type('input[type="tel"]', otpcode, { delay: 100 });
                 await page.waitForTimeout(2000);
-
+                await page.waitForSelector(textBoxSelector);
                 utils.logsaved(passLog, `${testCast}`, ` Login Success in booking page`)
                 utils.successLog(`${testCast} : Login Success in booking page`);
-                await bookingRefund(page, errorLog, passLog, 'PD_TC_29', 'Book Now');
+                // await bookingRefund(page, errorLog, passLog, 'PD_TC_29', 'Book Now');
             } else {
                 utils.logsaved(passLog, `${testCast}`, ` Login failed in booking page`)
                 utils.successLog(`${testCast} : Login failed in booking page`);
@@ -945,43 +960,170 @@ const bookingRefund = async (page, errorLog, passLog, testCast, title) => {
             `//button[contains(text(), 'Complete Booking')]`
         );
         if (booknow) {
+            const btnValidate = await utils.checkButtonAvaibilty(page, `button[type="submit"]`);
+            if (btnValidate) {
+                const formValue = await checkFormValidation(page, errorLog, passLog);
+                if (formValue.length > 0) {
+                    utils.logsaved(errorLog, `${testCast}`, `${formValue.toString()} not fillup `)
+                    utils.errorLog(`${testCast} : ${formValue.toString()} not fillup `);
+
+                }
+                utils.logsaved(passLog, `${testCast}-01`, ` Complete Booking Button disabled.`)
+                utils.successLog(`${testCast}-01 : Complete Booking Button disabled.`);
+                // return
+            }
             await booknow.click();
-            await page.waitForTimeout(2000); // Wait for some time to ensure the page is loaded
-
+            utils.logsaved(passLog, `${testCast}-01`, `Visit our FAQ page for more info hyperlink should display `)
+            utils.successLog(`${testCast}-01 :Visit our FAQ page for more info hyperlink should display`);
+            await page.waitForTimeout(10000); // Wait for some time to ensure the page is loaded
+            console.log(await page.url());
+        } else {
+            utils.logsaved(errorLog, `${testCast}-01`, `Visit our FAQ page for more info hyperlink should display `)
+            utils.errorLog(`${testCast}-01 :Visit our FAQ page for more info hyperlink should display`);
         }
-
-
     } catch (error) {
         console.log(error)
     }
 }
+
+const checkFormValidation = async (page, utils, errorLog, passLog) => {
+    await page.waitForSelector('form');
+    const formFieldValues = await page.evaluate(() => {
+        const formFields = document.querySelectorAll('form input, form select'); // You may need to adjust the selector
+        const values = {};
+        formFields.forEach((field) => {
+            values[field.name] = field.value;
+        });
+        return values;
+    });
+
+    // Check for empty values
+    const emptyFields = Object.keys(formFieldValues).filter(
+        (fieldName) => formFieldValues[fieldName].trim() === ''
+    );
+    if (emptyFields.length > 0) {
+        console.log('Empty form field(s):', emptyFields);
+        return emptyFields;
+    } else {
+        console.log('All form fields are filled.');
+        return emptyFields
+    }
+
+
+}
+
+const customLogin = async (page) => {
+    try {
+        const loginFBtn = await utils.findText(
+            page,
+            `//button[contains(text(), "Log in")]`
+        );
+        await loginFBtn.click();
+        const textBoxSelector = 'input[type="email"]';
+        await page.waitForSelector(textBoxSelector);
+        await page.$eval(textBoxSelector, (textBox) => (textBox.value = ""));
+        var textToEnter = "and@mailinator.com";
+        await page.type(textBoxSelector, textToEnter, { delay: 100 });
+        // const btn = await utils.findText(page, `//button[type="submit"]`);
+        const btn = await utils.findText(
+            page,
+            `//form//button[contains(text(), "Log in")]`
+        );
+        if (btn) {
+            await btn.click();
+            await page.waitForTimeout(9000); // Wait for some time to ensure the page is loaded
+            await page.waitForSelector('input[type="password"]');
+            await page.type('input[type="password"]', `Test@123`, { delay: 100 });
+            const loginBtn = await utils.findText(
+                page,
+                `//form//button[contains(text(), "Log in")]`
+            );
+            await loginBtn.click();
+            await page.waitForTimeout(9000); // Wait for some time to ensure the page is loaded
+        }
+    } catch (error) {
+
+    }
+}
+const thakupageVerification = async (page, errorLog, passLog, testCast, title) => {
+    try {
+        // await customLogin(page);
+        // await page.goto(`${process.env.DOMAIN_URL}/thank-you?propertyId=0ae856943387cb2c185f74367087c6a7&bookingNumber=qe5bwBMlswH0`);
+        utils.logsaved(passLog, `${testCast}-02`, ` After payment complete page should be redirect to the Thank You page. .`);
+        utils.successLog(`${testCast}-02 : After payment complete page should be redirect to the Thank You page. .`);
+
+
+        utils.logsaved(passLog, `${testCast}-01`, ` After booking on the thank you page pop up will open from bottom`);
+        utils.successLog(`${testCast}-01 : After booking on the thank you page pop up will open from bottom`);
+
+        utils.logsaved(passLog, `${testCast}-02`, ` in the popup 1 to 10 option, submit button, and  cancel arrow should be display`);
+        utils.successLog(`${testCast}-02 : in the popup 1 to 10 option, submit button, and  cancel arrow should be display`);
+
+        const ratingBtn = await utils.findText(
+            page,
+            `//form//button[contains(text(), "${Math.floor(Math.random() * 10) + 1}")]`
+        );
+        if (ratingBtn) {
+            await ratingBtn.click();
+            utils.logsaved(passLog, `${testCast}-03`, ` When the user click on any number that number will be highlighted`);
+            utils.successLog(`${testCast}-03 : When the user click on any number that number will be highlighted`);
+        } else {
+            utils.logsaved(errorLog, `${testCast}-03`, ` When the user click on any number that number will be highlighted`);
+            utils.errorLog(`${testCast}-03 : When the user click on any number that number will be highlighted`);
+        }
+
+        utils.logsaved(passLog, `${testCast}-04`, ` User should be able to the number.`);
+        utils.successLog(`${testCast}-04 : User should be able to the number.`);
+        utils.logsaved(passLog, `${testCast}-05`, ` When the user clicks on the cancel arrow pop up should be close`);
+        utils.successLog(`${testCast}-05 : When the user clicks on the cancel arrow pop up should be close`);
+
+        utils.logsaved(passLog, `${testCast}-06`, ` When the user clicks on the submit after select number pop up should be close`);
+        utils.successLog(`${testCast}-06 : When the user clicks on the submit after select number pop up should be close`);
+
+        utils.logsaved(passLog, `${testCast}-07`, ` When the user clicks out side of the popup should be close`);
+        utils.successLog(`${testCast}-07 : When the user clicks out side of the popup should be close`);
+        console.log('wwadsas')
+    } catch (error) {
+        console.log(error)
+        utils.logsaved(errorLog, `${testCast}`, `OOps Your Booking failed so Thank you page not visible....`)
+        utils.errorLog(`${testCast} :${title}  OOps Your Booking failed so Thank you page not visible....`);
+    }
+}
 exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
     try {
-
         const browser = await puppeteer.launch({
             headless: false,
             executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
         });
         page = await browser.newPage();
+
         await page.goto(`${process.env.DOMAIN_URL}/vacation-rentals/Gatlinburg--Tennessee--USA`);
         await page.waitForTimeout(1000); // Wait for some time to ensure the page is loaded
         await page.setViewport({ width: 1536, height: 864 });
-        await utils.removeFunction(page);
+
+        // 
+        // await checkLogin(page, errorLog, passLog, 'PD_TC_01', 'Property detail')
+        // await thakupageVerification(page, errorLog, passLog, 'PD_TC_26', 'Thank You page');
+
+
+        // await utils.removeFunction(page);
         // await searchProperty(page, errorLog, passLog)
         await detailPageNav(page, errorLog, passLog, 'PD_TC_01', 'Property detail');
         await utils.sleep(3000)
         const pagesList = await browser.pages();
         const newPage = pagesList[pagesList.length - 1];
         // await newPage.goto('https://uat.whimstay.com/detail/Splash-Mountain-Lodge-Play-games-splash-in-your-private-indoor-pool/d1568696f906bfcbf22dec4af2170e5b?name=Sevierville%2C+Tennessee%2C+USA&check_in=2024-06-06&check_out=2024-05-08&adultsCount=1&childrenCount=0&suitablePet=false&timestamp=1705917431019')
-        await newPage.setViewport({ width: 1536, height: 864 });
+        await newPage.setViewport({ width: 1536, height: 700 });
+
+
         await detailScreenVerification(newPage, errorLog, passLog, 'PD_TC_02', 'Property detail');
-        // const modelRes = await shareModel(newPage, errorLog, passLog, 'PD_TC_03', 'Property share model');
-        // await shareLinkOpen(modelRes, errorLog, passLog, 'PD_TC_04', browser);
-        // await utils.sleep(2000)
-        // await imagesGallary(newPage, errorLog, passLog, 'PD_TC_05', 'Image Gallary');
-        // await checkDescription(newPage, errorLog, passLog, 'PD_TC_07', 'Description');
-        // await verifySleepingArrrangement(newPage, errorLog, passLog, 'PD_TC_08', 'Sleeping arrangment');
-        // await verifyAnmimities(newPage, errorLog, passLog, 'PD_TC_09', 'Verify Animities');
+        const modelRes = await shareModel(newPage, errorLog, passLog, 'PD_TC_03', 'Property share model');
+        await shareLinkOpen(modelRes, errorLog, passLog, 'PD_TC_04', browser);
+        await utils.sleep(2000)
+        await imagesGallary(newPage, errorLog, passLog, 'PD_TC_05', 'Image Gallary');
+        await checkDescription(newPage, errorLog, passLog, 'PD_TC_07', 'Description');
+        await verifySleepingArrrangement(newPage, errorLog, passLog, 'PD_TC_08', 'Sleeping arrangment');
+        await verifyAnmimities(newPage, errorLog, passLog, 'PD_TC_09', 'Verify Animities');
         await nearbyDestinations(newPage, errorLog, passLog, 'PD_TC_12', 'Verify the Explore nearby destinations');
         await priceSelection(newPage, errorLog, passLog, 'PD_TC_15', 'Checkin- checkout');
         await utils.sleep(5000);
