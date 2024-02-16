@@ -1047,8 +1047,8 @@ const customLogin = async (page) => {
 }
 const thakupageVerification = async (page, errorLog, passLog, testCast, title) => {
     try {
-        // await customLogin(page);
-        // await page.goto(`${process.env.DOMAIN_URL}/thank-you?propertyId=0ae856943387cb2c185f74367087c6a7&bookingNumber=qe5bwBMlswH0`);
+        await customLogin(page);
+        await page.goto(`${process.env.DOMAIN_URL}/thank-you?propertyId=0ae856943387cb2c185f74367087c6a7&bookingNumber=qe5bwBMlswH0`);
         utils.logsaved(passLog, `${testCast}-02`, ` After payment complete page should be redirect to the Thank You page. .`);
         utils.successLog(`${testCast}-02 : After payment complete page should be redirect to the Thank You page. .`);
 
@@ -1061,7 +1061,7 @@ const thakupageVerification = async (page, errorLog, passLog, testCast, title) =
 
         const ratingBtn = await utils.findText(
             page,
-            `//form//button[contains(text(), "${Math.floor(Math.random() * 10) + 1}")]`
+            `//button[contains(text(), "${Math.floor(Math.random() * 10) + 1}")]`
         );
         if (ratingBtn) {
             await ratingBtn.click();
@@ -1082,7 +1082,19 @@ const thakupageVerification = async (page, errorLog, passLog, testCast, title) =
 
         utils.logsaved(passLog, `${testCast}-07`, ` When the user clicks out side of the popup should be close`);
         utils.successLog(`${testCast}-07 : When the user clicks out side of the popup should be close`);
-        console.log('wwadsas')
+
+        const confirmTxt = await utils.findText(
+            page,
+            `//p[contains(text(), "Confirmation")]`
+        );
+        if (confirmTxt) {
+            utils.logsaved(passLog, `PD_TC_28-01`, ` Confirmation Number`);
+            utils.successLog(`PD_TC_28-01 : Confirmation Number`);
+        } else {
+            utils.logsaved(errorLog, `PD_TC_28-01`, ` Confirmation Number`);
+            utils.errorLog(`PD_TC_28-01 : Confirmation Number`);
+        }
+        console.log('wwadsas');
     } catch (error) {
         console.log(error)
         utils.logsaved(errorLog, `${testCast}`, `OOps Your Booking failed so Thank you page not visible....`)
@@ -1103,7 +1115,7 @@ exports.detailPage = async (page = '', errorLog = [], passLog = []) => {
 
         // 
         // await checkLogin(page, errorLog, passLog, 'PD_TC_01', 'Property detail')
-        // await thakupageVerification(page, errorLog, passLog, 'PD_TC_26', 'Thank You page');
+        await thakupageVerification(page, errorLog, passLog, 'PD_TC_26', 'Thank You page');
 
 
         // await utils.removeFunction(page);
